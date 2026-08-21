@@ -188,6 +188,11 @@ dialog::backdrop{background:rgba(12,12,20,.45)}
 .packs button[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
 .two{display:flex; gap:12px; flex-wrap:wrap}
 .two>*{flex:1 1 130px}
+textarea{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; width:100%; resize:vertical;
+  color:var(--ink); background:var(--surface-2); border:1px solid var(--line-2); border-radius:8px; padding:10px 12px}
+textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:var(--surface)}
+.pasteerr{color:var(--bad)}
+.pasteerr[hidden]{display:none}
 .daylist{display:flex; flex-direction:column; max-height:52vh; overflow-y:auto; border-top:1px solid var(--line)}
 .dayrow{display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--line); flex-wrap:wrap}
 .dayrow .dn{font-family:"Literata",Georgia,serif; font-weight:600; font-size:15px; flex:1 1 130px; min-width:0}
@@ -399,6 +404,7 @@ dialog::backdrop{background:rgba(12,12,20,.45)}
       <div class="hbtns">
         <button data-act="export">Скачать резервную копию</button>
         <button data-act="import">Загрузить из файла</button>
+        <button data-act="paste">Вставить JSON</button>
         <button data-act="restore">Восстановить с этого устройства</button>
         <button data-act="logout" hidden>Выйти</button>
       </div>
@@ -476,6 +482,15 @@ dialog::backdrop{background:rgba(12,12,20,.45)}
     <div class="field"><label for="cxD">Дата</label><input type="date" id="cxD"></div>
   </div>
   <div class="dfoot"><button data-act="close">Назад</button><button data-act="cx-free">Не списывать</button><button class="primary" data-act="cx-charge">Списать урок</button></div>
+</dialog>
+
+<dialog id="dlgPaste">
+  <div class="dhead"><h3>Вставить JSON</h3><small>формат резервной копии</small></div>
+  <div class="dbody">
+    <textarea id="pasteBox" rows="10" spellcheck="false" placeholder='{"students":[{"name":"Имя","rate":2000,"bal":4}]}'></textarea>
+    <p class="hint pasteerr" id="pasteErr" hidden></p>
+  </div>
+  <div class="dfoot"><button data-act="close">Отмена</button><button class="primary" data-act="paste-ok">Загрузить</button></div>
 </dialog>
 
 <dialog id="dlgDay">
@@ -763,6 +778,23 @@ function onClick(e){
   if(act==='export'){exportBackup();return;}
   if(act==='restore'){restore();return;}
   if(act==='import'){var fi=$('#importFile'); if(fi)fi.click(); return;}
+  if(act==='paste'){
+    var box=$('#pasteBox'), pe=$('#pasteErr');
+    if(box)box.value=''; if(pe)pe.hidden=true;
+    $('#dlgPaste').showModal(); if(box)setTimeout(function(){box.focus();},50);
+    return;
+  }
+  if(act==='paste-ok'){
+    var box2=$('#pasteBox'), pe2=$('#pasteErr');
+    var n=loadSnapshot(box2?box2.value:'');
+    if(!n){
+      if(pe2){pe2.textContent='Не получилось разобрать. Нужен объект со списком students или просто массив учеников.';pe2.hidden=false;}
+      return;
+    }
+    $('#dlgPaste').close();
+    toast('Загружено учеников: '+n);
+    return;
+  }
   if(act==='logout'){logout();return;}
   if(act==='close'){var dg=b.closest('dialog');if(dg)dg.close();return;}
   if(act==='copy-due'){
@@ -940,15 +972,56 @@ function logout(){
     .then(function(){return null;},function(){return null;})
     .then(function(){location.replace(location.pathname+'?logout='+Date.now());});
 }
-// Загрузка снимка из файла: так переносят данные между устройствами и версиями.
+// Разбор чужого JSON терпимый: полный снимок, голый массив учеников или
+// список без истории - всё приводится к внутреннему виду.
+function normalize(d){
+  if(typeof d==='string'){ try{ d=JSON.parse(d); }catch(e){ return null; } }
+  if(Array.isArray(d)) d={students:d};
+  if(!d||typeof d!=='object') return null;
+  var list=d.students||d.ученики||d.items;
+  if(!Array.isArray(list)||!list.length) return null;
+  var today=todayISO();
+  var defRate=Number(d.defRate)||Number($('#defRate').value)||2000;
+  return {
+    v:1, ts:Date.now(),
+    thr:d.thr!=null?String(d.thr):$('#thr').value,
+    defRate:String(defRate),
+    tplLow:d.tplLow||$('#tplLow').textContent,
+    tplDebt:d.tplDebt||$('#tplDebt').textContent,
+    students:list.map(function(x,i){
+      var bal=Number(x.bal!=null?x.bal:(x.balance!=null?x.balance:x.остаток));
+      if(!isFinite(bal))bal=0;
+      var rate=Number(x.rate!=null?x.rate:x.ставка)||defRate;
+      var h=Array.isArray(x.h)?x.h:(Array.isArray(x.history)?x.history:[]);
+      if(!h.length)h=[{d:today,t:'init',delta:bal,amt:0,label:'Стартовый остаток',note:''}];
+      return {
+        id:String(x.id||('s'+(i+1)+'-'+Math.random().toString(36).slice(2,6))),
+        arch:String(x.arch||'0')==='1'?'1':'0',
+        name:String(x.name||x.имя||'Без имени'),
+        rate:rate, contact:String(x.contact||x.контакт||''), note:String(x.note||''),
+        bal:Math.round(bal),
+        h:h.map(function(r){return{
+          d:String(r.d||r.date||today), t:String(r.t||r.type||'init'),
+          delta:Number(r.delta)||0, amt:Number(r.amt||r.amount)||0,
+          label:String(r.label||'Запись'), note:String(r.note||'')
+        };})
+      };
+    })
+  };
+}
+// Перед заменой откладываем текущее состояние, чтобы неудачный импорт можно было откатить.
+function loadSnapshot(input){
+  var d=normalize(input);
+  if(!d)return null;
+  try{ localStorage.setItem('uroki.beforeImport',JSON.stringify(snapshot())); }catch(e){}
+  commit(function(){ applySnapshot(d); });
+  return d.students.length;
+}
 function importFile(file){
   var reader=new FileReader();
   reader.onload=function(){
-    var d;
-    try{ d=JSON.parse(String(reader.result)); }catch(e){ toast('Файл не читается'); return; }
-    if(!d||!Array.isArray(d.students)||!d.students.length){ toast('В файле нет учеников'); return; }
-    if(!needSecond('import','Это заменит текущие данные. Нажмите ещё раз'))return;
-    commit(function(){ applySnapshot(d); toast('Загружено учеников: '+d.students.length); });
+    var n=loadSnapshot(String(reader.result));
+    toast(n?('Загружено учеников: '+n):'В файле не нашлось учеников');
   };
   reader.onerror=function(){ toast('Файл не читается'); };
   reader.readAsText(file);

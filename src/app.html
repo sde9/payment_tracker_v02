@@ -1,0 +1,815 @@
+<title>Уроки и оплаты</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..700&family=Literata:opsz,wght@7..72,500;7..72,600&display=swap">
+<style>
+:root{
+  --bg:#F4F4F8; --surface:#FFFFFF; --surface-2:#ECECF2; --surface-3:#E2E2EC;
+  --ink:#1A1B26; --ink-2:#585A6C; --ink-3:#8C8EA0;
+  --line:#DCDCE6; --line-2:#C9C9D6;
+  --accent:#3B4BA0; --accent-2:#2C3A85; --accent-soft:#E5E8F8;
+  --ok:#2C6A44; --ok-soft:#E0EFE5;
+  --warn:#8E5E12; --warn-soft:#F8EDD8;
+  --bad:#A33628; --bad-soft:#F8E3DE;
+  --shadow:0 1px 2px rgba(26,27,38,.06), 0 6px 18px -10px rgba(26,27,38,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121219; --surface:#1C1C25; --surface-2:#24242F; --surface-3:#2D2D3A;
+    --ink:#ECECF3; --ink-2:#9C9DB0; --ink-3:#71728A;
+    --line:#31313E; --line-2:#3D3D4C;
+    --accent:#98A4EE; --accent-2:#B0B9F4; --accent-soft:#242A4C;
+    --ok:#6FC08C; --ok-soft:#1A3326;
+    --warn:#DFB067; --warn-soft:#372C14;
+    --bad:#E88774; --bad-soft:#3A1F19;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px -10px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121219; --surface:#1C1C25; --surface-2:#24242F; --surface-3:#2D2D3A;
+  --ink:#ECECF3; --ink-2:#9C9DB0; --ink-3:#71728A;
+  --line:#31313E; --line-2:#3D3D4C;
+  --accent:#98A4EE; --accent-2:#B0B9F4; --accent-soft:#242A4C;
+  --ok:#6FC08C; --ok-soft:#1A3326;
+  --warn:#DFB067; --warn-soft:#372C14;
+  --bad:#E88774; --bad-soft:#3A1F19;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px -10px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Golos Text","Segoe UI",Roboto,system-ui,sans-serif;
+  font-size:15px; line-height:1.5; -webkit-text-size-adjust:100%;
+}
+artifact-local{display:contents}
+.wrap{max-width:920px; margin:0 auto; padding:28px 18px 80px; display:flex; flex-direction:column; gap:18px}
+
+/* header */
+.top{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap}
+h1{font-family:"Literata",Georgia,serif; font-weight:600; font-size:27px; margin:0; letter-spacing:-.01em; text-wrap:balance}
+.sub{margin:3px 0 0; color:var(--ink-2); font-size:13.5px}
+.chip{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2);
+  border:1px solid var(--line); border-radius:999px; padding:4px 11px; background:var(--surface); white-space:nowrap}
+.chip[data-mode="local"]{color:var(--warn); border-color:var(--warn); background:var(--warn-soft)}
+
+/* panels */
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:10px; box-shadow:var(--shadow)}
+
+/* month */
+.month{padding:14px 16px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+.month-nav{display:flex; align-items:center; gap:6px; min-width:190px}
+.month-nav b{font-family:"Literata",Georgia,serif; font-weight:600; font-size:16px; text-transform:capitalize}
+.mstats{display:flex; gap:22px; flex-wrap:wrap; margin-left:auto}
+.mstat{display:flex; flex-direction:column; gap:1px}
+.mstat i{font-style:normal; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3)}
+.mstat b{font-size:19px; font-weight:600; font-variant-numeric:tabular-nums}
+
+/* due */
+.due{padding:13px 16px; border-color:var(--warn); background:var(--warn-soft)}
+.due h2{margin:0 0 8px; font-size:12px; letter-spacing:.07em; text-transform:uppercase; color:var(--warn); font-weight:600}
+.due ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px}
+.due li{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:14.5px}
+.due li b{font-family:"Literata",Georgia,serif; font-weight:600}
+.due li em{font-style:normal; color:var(--ink-2); font-size:13px}
+
+/* toolbar */
+.toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+button{font:inherit; cursor:pointer; border-radius:7px; border:1px solid var(--line-2);
+  background:var(--surface); color:var(--ink); padding:7px 13px; transition:background .12s, border-color .12s}
+button:hover{background:var(--surface-2); border-color:var(--ink-3)}
+button:focus-visible, [contenteditable]:focus-visible, input:focus-visible, summary:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px}
+button.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+:root[data-theme="dark"] button.primary, :root:not([data-theme="light"]) button.primary{color:#12121a}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) button.primary{color:#fff} }
+button.primary:hover{background:var(--accent-2); border-color:var(--accent-2)}
+button.ghost{border-color:transparent; background:transparent; color:var(--ink-2); padding:6px 9px}
+button.ghost:hover{background:var(--surface-2); color:var(--ink)}
+button.tiny{font-size:12.5px; padding:4px 9px}
+.tgl{display:inline-flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); margin-left:auto; cursor:pointer}
+
+/* ledger */
+.ledger{overflow:hidden}
+.lhead{display:grid; grid-template-columns:1fr auto auto; gap:14px; padding:10px 16px; border-bottom:1px solid var(--line);
+  font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3); background:var(--surface-2)}
+.rows{display:flex; flex-direction:column}
+.row{border-bottom:1px solid var(--line); padding:14px 16px; display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto; grid-template-areas:"who bal acts" "hist hist hist"; gap:8px 14px; align-items:center}
+.row:last-child{border-bottom:0}
+.rows:not([data-local-arch="1"]) .row[data-arch="1"]{display:none}
+.row[data-arch="1"]{opacity:.62}
+
+.who{grid-area:who; min-width:0; display:flex; flex-direction:column; gap:2px}
+.name{font-family:"Literata",Georgia,serif; font-weight:600; font-size:17px; line-height:1.3; outline:none; border-radius:3px}
+.meta{font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:6px; flex-wrap:wrap}
+.meta .u{color:var(--ink-3)}
+.h-l{display:block}
+.meta .ed{outline:none; border-bottom:1px dashed transparent; border-radius:2px; min-width:14px}
+.meta .ed:hover{border-bottom-color:var(--line-2)}
+.meta .ed:focus{border-bottom-color:var(--accent); color:var(--ink)}
+[contenteditable]:empty::before{content:attr(data-ph); color:var(--ink-3); opacity:.75}
+
+.bal{grid-area:bal; display:flex; flex-direction:column; align-items:flex-end; gap:0; line-height:1.15}
+.bal-n{font-size:31px; font-weight:600; font-variant-numeric:tabular-nums; letter-spacing:-.02em}
+.bal-m{font-size:12.5px; color:var(--ink-3); font-variant-numeric:tabular-nums}
+.row[data-state="ok"] .bal-n{color:var(--ok)}
+.row[data-state="low"] .bal-n{color:var(--warn)}
+.row[data-state="debt"] .bal-n{color:var(--bad)}
+.tag{font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; font-weight:600; padding:2px 7px; border-radius:999px; margin-top:3px}
+.row[data-state="ok"] .tag{display:none}
+.row[data-state="low"] .tag{background:var(--warn-soft); color:var(--warn)}
+.row[data-state="low"] .tag::after{content:"пора напомнить"}
+.row[data-state="debt"] .tag{background:var(--bad-soft); color:var(--bad)}
+.row[data-state="debt"] .tag::after{content:"нет оплаты"}
+
+.acts{grid-area:acts; display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end}
+
+.hist{grid-area:hist; margin-top:2px}
+.hist>summary{list-style:none; cursor:pointer; font-size:12.5px; color:var(--ink-3); padding:2px 0; display:inline-flex; align-items:center; gap:6px}
+.hist>summary::-webkit-details-marker{display:none}
+.hist>summary::before{content:"▸"; font-size:10px; transition:transform .15s}
+.hist[open]>summary::before{transform:rotate(90deg)}
+.histbody{padding:10px 0 4px; display:flex; flex-direction:column; gap:10px}
+.snote{font-size:13px; color:var(--ink-2); background:var(--surface-2); border-radius:6px; padding:7px 10px; outline:none}
+.snote:focus{background:var(--accent-soft); color:var(--ink)}
+.hrows{display:flex; flex-direction:column; border-top:1px solid var(--line)}
+.h{display:grid; grid-template-columns:62px 1fr auto; gap:10px; align-items:baseline; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px}
+.h-d{color:var(--ink-3); font-variant-numeric:tabular-nums; font-size:12px}
+.h-t{color:var(--ink-2); min-width:0}
+.h-note{display:block; font-size:12px; color:var(--ink-3); outline:none; margin-top:1px}
+.h-note:focus{color:var(--ink)}
+.h-n{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap}
+.h[data-delta^="-"] .h-n{color:var(--bad)}
+.h[data-t="pay"] .h-n{color:var(--ok)}
+.h[data-t="cancel-free"] .h-n{color:var(--ink-3)}
+.hbtns{display:flex; gap:6px; flex-wrap:wrap}
+.row[data-arch="0"] [data-act="arch"]::after{content:"В архив"}
+.row[data-arch="1"] [data-act="arch"]::after{content:"Вернуть из архива"}
+
+/* settings */
+.settings{padding:0}
+.settings>summary{cursor:pointer; padding:12px 16px; font-size:13.5px; color:var(--ink-2); list-style:none}
+.settings>summary::-webkit-details-marker{display:none}
+.settings>summary::before{content:"▸ "; font-size:10px}
+.settings[open]>summary{border-bottom:1px solid var(--line)}
+.sbody{padding:14px 16px 18px; display:flex; flex-direction:column; gap:14px; font-size:14px}
+.field{display:flex; flex-direction:column; gap:5px}
+.field>label{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3)}
+.tpl{border:1px solid var(--line); border-radius:7px; padding:9px 11px; background:var(--surface-2); outline:none; min-height:2.6em; line-height:1.55}
+.tpl:focus{border-color:var(--accent); background:var(--surface)}
+.hint{font-size:12.5px; color:var(--ink-3); margin:0}
+input[type="text"],input[type="number"],input[type="date"]{font:inherit; color:var(--ink); background:var(--surface);
+  border:1px solid var(--line-2); border-radius:7px; padding:7px 10px; max-width:100%}
+input[type="number"]{width:110px}
+
+/* dialogs */
+dialog{border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink);
+  padding:0; max-width:min(94vw,480px); width:100%; box-shadow:0 24px 60px -18px rgba(0,0,0,.45)}
+dialog::backdrop{background:rgba(12,12,20,.45)}
+.dhead{padding:15px 18px 0; display:flex; align-items:baseline; justify-content:space-between; gap:12px}
+.dhead h3{margin:0; font-family:"Literata",Georgia,serif; font-weight:600; font-size:18px}
+.dhead small{color:var(--ink-3); font-size:12.5px}
+.dbody{padding:14px 18px; display:flex; flex-direction:column; gap:13px}
+.dfoot{padding:12px 18px 16px; display:flex; gap:8px; justify-content:flex-end; border-top:1px solid var(--line)}
+.packs{display:flex; gap:7px; flex-wrap:wrap}
+.packs button[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+.two{display:flex; gap:12px; flex-wrap:wrap}
+.two>*{flex:1 1 130px}
+.daylist{display:flex; flex-direction:column; max-height:52vh; overflow-y:auto; border-top:1px solid var(--line)}
+.dayrow{display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--line); flex-wrap:wrap}
+.dayrow .dn{font-family:"Literata",Georgia,serif; font-weight:600; font-size:15px; flex:1 1 130px; min-width:0}
+.dayrow .db{font-variant-numeric:tabular-nums; font-size:12.5px; color:var(--ink-3); width:52px; text-align:right}
+.dayrow .done{font-size:12.5px; color:var(--ok); min-width:64px}
+
+.toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--ink); color:var(--bg);
+  padding:9px 16px; border-radius:999px; font-size:13.5px; z-index:99; box-shadow:0 8px 24px -8px rgba(0,0,0,.5)}
+@media (prefers-reduced-motion: no-preference){ .toast{animation:pop .2s ease-out} }
+@keyframes pop{from{opacity:0; transform:translate(-50%,8px)}}
+
+@media (max-width:640px){
+  .wrap{padding:20px 13px 70px}
+  .row{grid-template-columns:1fr auto; grid-template-areas:"who bal" "acts acts" "hist hist"}
+  .acts{justify-content:flex-start}
+  .lhead{display:none}
+  .mstats{margin-left:0; gap:16px}
+}
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>Уроки и оплаты</h1>
+      <p class="sub">Частные занятия английским · 45 минут · предоплата пакетами</p>
+    </div>
+    <artifact-local><span class="chip" id="chip">проверяю сохранение…</span></artifact-local>
+  </header>
+
+  <artifact-local><section class="panel month" id="month"></section></artifact-local>
+
+  <artifact-local><section class="panel due" id="due" hidden></section></artifact-local>
+
+  <div class="toolbar">
+    <button class="primary" data-act="add">+ Ученик</button>
+    <button data-act="day">Отметить день</button>
+    <artifact-local><label class="tgl"><input type="checkbox" id="arch"> показать архив</label></artifact-local>
+  </div>
+
+  <section class="panel ledger">
+    <div class="lhead"><span>Ученик</span><span>Остаток</span><span>Действия</span></div>
+    <div class="rows" id="rows">
+
+      <div class="row" data-id="s1" data-state="ok" data-arch="0">
+        <div class="who">
+          <span class="name" contenteditable="plaintext-only">Светлана Кострюкова</span>
+          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
+        </div>
+        <div class="bal"><span class="bal-n">6</span><span class="bal-m">12 000 ₽</span><span class="tag"></span></div>
+        <div class="acts">
+          <button class="tiny" data-act="lesson">Провёл</button>
+          <button class="tiny" data-act="cancel">Отмена</button>
+          <button class="tiny" data-act="pay">Оплата</button>
+          <button class="tiny ghost" data-act="copy">Текст</button>
+        </div>
+        <details class="hist"><summary>История</summary><div class="histbody">
+          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
+          <div class="hrows">
+            <div class="h" data-d="2026-08-20" data-t="init" data-delta="6" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">+6</span></div>
+          </div>
+          <div class="hbtns">
+            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
+            <button class="tiny ghost" data-act="arch"></button>
+            <button class="tiny ghost" data-act="del">Удалить</button>
+          </div>
+        </div></details>
+      </div>
+
+      <div class="row" data-id="s2" data-state="ok" data-arch="0">
+        <div class="who">
+          <span class="name" contenteditable="plaintext-only">Иван Стругов</span>
+          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
+        </div>
+        <div class="bal"><span class="bal-n">4</span><span class="bal-m">8 000 ₽</span><span class="tag"></span></div>
+        <div class="acts">
+          <button class="tiny" data-act="lesson">Провёл</button>
+          <button class="tiny" data-act="cancel">Отмена</button>
+          <button class="tiny" data-act="pay">Оплата</button>
+          <button class="tiny ghost" data-act="copy">Текст</button>
+        </div>
+        <details class="hist"><summary>История</summary><div class="histbody">
+          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
+          <div class="hrows">
+            <div class="h" data-d="2026-08-20" data-t="init" data-delta="4" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">+4</span></div>
+          </div>
+          <div class="hbtns">
+            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
+            <button class="tiny ghost" data-act="arch"></button>
+            <button class="tiny ghost" data-act="del">Удалить</button>
+          </div>
+        </div></details>
+      </div>
+
+      <div class="row" data-id="s3" data-state="debt" data-arch="0">
+        <div class="who">
+          <span class="name" contenteditable="plaintext-only">Елена Судакова</span>
+          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
+        </div>
+        <div class="bal"><span class="bal-n">0</span><span class="bal-m">0 ₽</span><span class="tag"></span></div>
+        <div class="acts">
+          <button class="tiny" data-act="lesson">Провёл</button>
+          <button class="tiny" data-act="cancel">Отмена</button>
+          <button class="tiny" data-act="pay">Оплата</button>
+          <button class="tiny ghost" data-act="copy">Текст</button>
+        </div>
+        <details class="hist"><summary>История</summary><div class="histbody">
+          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
+          <div class="hrows">
+            <div class="h" data-d="2026-08-20" data-t="init" data-delta="0" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">0</span></div>
+          </div>
+          <div class="hbtns">
+            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
+            <button class="tiny ghost" data-act="arch"></button>
+            <button class="tiny ghost" data-act="del">Удалить</button>
+          </div>
+        </div></details>
+      </div>
+
+      <div class="row" data-id="s4" data-state="debt" data-arch="0">
+        <div class="who">
+          <span class="name" contenteditable="plaintext-only">Алёна Данилина</span>
+          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">950</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
+        </div>
+        <div class="bal"><span class="bal-n">0</span><span class="bal-m">0 ₽</span><span class="tag"></span></div>
+        <div class="acts">
+          <button class="tiny" data-act="lesson">Провёл</button>
+          <button class="tiny" data-act="cancel">Отмена</button>
+          <button class="tiny" data-act="pay">Оплата</button>
+          <button class="tiny ghost" data-act="copy">Текст</button>
+        </div>
+        <details class="hist"><summary>История</summary><div class="histbody">
+          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике">Остаток на 20 августа не помним, начали с нуля.</div>
+          <div class="hrows">
+            <div class="h" data-d="2026-08-20" data-t="init" data-delta="0" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">0</span></div>
+          </div>
+          <div class="hbtns">
+            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
+            <button class="tiny ghost" data-act="arch"></button>
+            <button class="tiny ghost" data-act="del">Удалить</button>
+          </div>
+        </div></details>
+      </div>
+
+      <div class="row" data-id="s5" data-state="debt" data-arch="0">
+        <div class="who">
+          <span class="name" contenteditable="plaintext-only">Геннадий</span>
+          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
+        </div>
+        <div class="bal"><span class="bal-n">−5</span><span class="bal-m">−10 000 ₽</span><span class="tag"></span></div>
+        <div class="acts">
+          <button class="tiny" data-act="lesson">Провёл</button>
+          <button class="tiny" data-act="cancel">Отмена</button>
+          <button class="tiny" data-act="pay">Оплата</button>
+          <button class="tiny ghost" data-act="copy">Текст</button>
+        </div>
+        <details class="hist"><summary>История</summary><div class="histbody">
+          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике">Долг 5 занятий на 20 августа.</div>
+          <div class="hrows">
+            <div class="h" data-d="2026-08-20" data-t="init" data-delta="-5" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">−5</span></div>
+          </div>
+          <div class="hbtns">
+            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
+            <button class="tiny ghost" data-act="arch"></button>
+            <button class="tiny ghost" data-act="del">Удалить</button>
+          </div>
+        </div></details>
+      </div>
+
+    </div>
+  </section>
+
+  <details class="panel settings">
+    <summary>Настройки и резервная копия</summary>
+    <div class="sbody">
+      <div class="field">
+        <label for="thr">Напоминать, когда осталось уроков</label>
+        <input type="number" id="thr" value="2" min="0" max="20" step="1">
+      </div>
+      <div class="field">
+        <label>Текст, когда баланс заканчивается</label>
+        <div class="tpl" id="tplLow" contenteditable="plaintext-only">Привет, {имя}! У тебя осталось {остаток}. Скажи, какой пакет берём дальше: 4, 5 или 10?</div>
+      </div>
+      <div class="field">
+        <label>Текст, когда есть долг</label>
+        <div class="tpl" id="tplDebt" contenteditable="plaintext-only">Привет, {имя}! Оплаченные занятия закончились, сейчас за нами {долг}. Давай пополним баланс: 4, 5 или 10 занятий?</div>
+      </div>
+      <p class="hint">Подстановки: <b>{имя}</b>, <b>{остаток}</b> (например «2 занятия»), <b>{долг}</b> (например «3 занятия, 6 000 ₽»).</p>
+      <div class="field">
+        <label>Ставка по умолчанию для новых учеников, ₽</label>
+        <input type="number" id="defRate" value="2000" min="0" step="50">
+      </div>
+      <div class="hbtns">
+        <button data-act="export">Скачать резервную копию</button>
+        <button data-act="restore">Восстановить с этого устройства</button>
+      </div>
+      <p class="hint">Резервная копия сохраняется в браузере при каждом изменении. Кнопка «Скачать» отдаёт файл JSON.</p>
+    </div>
+  </details>
+
+</div>
+
+<template id="tpl-row">
+  <div class="row" data-id="" data-state="debt" data-arch="0">
+    <div class="who">
+      <span class="name" contenteditable="plaintext-only" data-ph="имя ученика"></span>
+      <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
+    </div>
+    <div class="bal"><span class="bal-n">0</span><span class="bal-m">0 ₽</span><span class="tag"></span></div>
+    <div class="acts">
+      <button class="tiny" data-act="lesson">Провёл</button>
+      <button class="tiny" data-act="cancel">Отмена</button>
+      <button class="tiny" data-act="pay">Оплата</button>
+      <button class="tiny ghost" data-act="copy">Текст</button>
+    </div>
+    <details class="hist"><summary>История</summary><div class="histbody">
+      <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
+      <div class="hrows"></div>
+      <div class="hbtns">
+        <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
+        <button class="tiny ghost" data-act="arch"></button>
+        <button class="tiny ghost" data-act="del">Удалить</button>
+      </div>
+    </div></details>
+  </div>
+</template>
+
+<template id="tpl-h">
+  <div class="h" data-d="" data-t="" data-delta="" data-amt="0"><span class="h-d"></span><span class="h-t"><span class="h-l"></span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n"></span></div>
+</template>
+
+<artifact-local>
+<dialog id="dlgPay">
+  <div class="dhead"><h3>Оплата</h3><small id="payWho"></small></div>
+  <div class="dbody">
+    <div class="field">
+      <label>Пакет</label>
+      <div class="packs" id="packs">
+        <button data-n="4">4 урока</button>
+        <button data-n="5">5 уроков</button>
+        <button data-n="10">10 уроков</button>
+      </div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="payN">Уроков</label><input type="number" id="payN" value="5" min="1" step="1"></div>
+      <div class="field"><label for="payS">Сумма, ₽</label><input type="number" id="payS" value="10000" min="0" step="50"></div>
+    </div>
+    <div class="field"><label for="payD">Дата</label><input type="date" id="payD"></div>
+    <div class="field"><label for="payC">Комментарий</label><input type="text" id="payC" placeholder="перевод на карту"></div>
+  </div>
+  <div class="dfoot"><button data-act="close">Отмена</button><button class="primary" data-act="pay-ok">Записать оплату</button></div>
+</dialog>
+
+<dialog id="dlgCancel">
+  <div class="dhead"><h3>Занятие отменено</h3><small id="cxWho"></small></div>
+  <div class="dbody">
+    <p class="hint" style="margin:0">Предупредил раньше чем за 6 часов, урок остаётся. Позже, урок сгорает.</p>
+    <div class="field"><label for="cxD">Дата</label><input type="date" id="cxD"></div>
+  </div>
+  <div class="dfoot"><button data-act="close">Назад</button><button data-act="cx-free">Не списывать</button><button class="primary" data-act="cx-charge">Списать урок</button></div>
+</dialog>
+
+<dialog id="dlgDay">
+  <div class="dhead"><h3>Отметить день</h3><small>ставьте отметки подряд, они сохраняются сразу</small></div>
+  <div class="dbody">
+    <div class="field"><label for="dayD">Дата</label><input type="date" id="dayD"></div>
+    <div class="daylist" id="dayList"></div>
+  </div>
+  <div class="dfoot"><button class="primary" data-act="close">Готово</button></div>
+</dialog>
+</artifact-local>
+
+<script>
+(function(){
+"use strict";
+var MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+var MONF=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+function $(s,r){return (r||document).querySelector(s);}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+function num(t){if(t==null)return 0;var c=String(t).replace(/−/g,'-').replace(/[\s  ]/g,'').replace(',','.');var v=parseFloat(c);return isNaN(v)?0:v;}
+function fmt(n){n=Math.round(n);return (n<0?'−':'')+new Intl.NumberFormat('ru-RU').format(Math.abs(n));}
+function rub(n){return fmt(n)+' ₽';}
+function plural(n,f){var a=Math.abs(n)%100,b=a%10;if(a>10&&a<20)return f[2];if(b>1&&b<5)return f[1];if(b===1)return f[0];return f[2];}
+function lessonsTxt(n){return fmt(n)+' '+plural(n,['занятие','занятия','занятий']);}
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function dShort(s){var p=String(s||todayISO()).split('-');return String(+p[2])+' '+MON[(+p[1]-1)||0];}
+
+function thr(){return Math.max(0,Math.round(num($('#thr').value)));}
+function rateOf(row){var v=num($('.rate',row).textContent);return v>0?v:0;}
+function balOf(row){return Math.round(num($('.bal-n',row).textContent));}
+function stateFor(b){return b<=0?'debt':(b<=thr()?'low':'ok');}
+function paint(row,b){$('.bal-n',row).textContent=fmt(b);$('.bal-m',row).textContent=rub(b*rateOf(row));row.dataset.state=stateFor(b);}
+function firstName(row){var t=($('.name',row).textContent||'').trim();return t.split(/\s+/)[0]||t||'друг';}
+
+function addH(row,o){
+  var el=$('#tpl-h').content.firstElementChild.cloneNode(true);
+  el.dataset.d=o.d; el.dataset.t=o.t; el.dataset.delta=String(o.delta); el.dataset.amt=String(o.amt||0);
+  $('.h-d',el).textContent=dShort(o.d);
+  $('.h-l',el).textContent=o.label;
+  $('.h-n',el).textContent=(o.t==='pay')?('+'+fmt(o.delta)+' · '+rub(o.amt)):(o.delta>0?'+'+fmt(o.delta):fmt(o.delta));
+  if(o.note)$('.h-note',el).textContent=o.note;
+  $('.hrows',row).appendChild(el);
+  return el;
+}
+var LABEL={lesson:'Занятие проведено','cancel-charged':'Отмена, урок списан','cancel-free':'Отмена, урок сохранён'};
+function doOp(row,kind,date){
+  var delta=(kind==='cancel-free')?0:-1;
+  addH(row,{d:date,t:kind,delta:delta,amt:0,label:LABEL[kind]});
+  paint(row,balOf(row)+delta);
+}
+function doPay(row,n,sum,date,comment){
+  addH(row,{d:date,t:'pay',delta:n,amt:sum,label:'Оплата'+(comment?', '+comment:'')});
+  paint(row,balOf(row)+n);
+}
+function doUndo(row){
+  var hs=$$('.h',row); if(!hs.length)return false;
+  var last=hs[hs.length-1], d=num(last.dataset.delta);
+  paint(row,balOf(row)-d); last.remove(); return true;
+}
+
+var art=null;
+var artReady=(function(){
+  try{ if(window.claude&&window.claude.use) return window.claude.use('artifact').then(function(a){art=a;return a;},function(){return null;}); }catch(e){}
+  return Promise.resolve(null);
+})();
+function setChip(mode){
+  var c=$('#chip'); if(!c)return;
+  if(mode==='ok'){c.textContent='сохраняется автоматически';c.removeAttribute('data-mode');}
+  else if(mode==='err'){c.textContent='не сохранилось, скачайте копию';c.dataset.mode='local';}
+  else {c.textContent='только в этом браузере';c.dataset.mode='local';}
+}
+function commit(fn){
+  return artReady.then(function(a){
+    if(a&&typeof a.sync==='function'){
+      return a.sync(fn).then(function(){setChip('ok');},function(e){console.warn('sync',e);setChip('err');});
+    }
+    fn(); setChip('local');
+  }).then(after);
+}
+
+function snapshot(){
+  return {v:1,ts:Date.now(),thr:$('#thr').value,defRate:$('#defRate').value,
+    tplLow:$('#tplLow').textContent,tplDebt:$('#tplDebt').textContent,
+    students:$$('#rows .row').map(function(r){return{
+      id:r.dataset.id,arch:r.dataset.arch,name:$('.name',r).textContent,rate:rateOf(r),
+      contact:$('.contact',r).textContent,note:$('.snote',r).textContent,bal:balOf(r),
+      h:$$('.h',r).map(function(h){return{d:h.dataset.d,t:h.dataset.t,delta:num(h.dataset.delta),
+        amt:num(h.dataset.amt),label:$('.h-l',h).textContent,note:$('.h-note',h).textContent};})
+    };})};
+}
+function backup(){try{localStorage.setItem('uroki.backup',JSON.stringify(snapshot()));}catch(e){}}
+
+var mOff=0;
+function renderMonth(){
+  var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()+mOff);
+  var y=d.getFullYear(), m=d.getMonth();
+  var inc=0,les=0,cxC=0,cxF=0;
+  $$('#rows .h').forEach(function(h){
+    var p=String(h.dataset.d||'').split('-');
+    if(+p[0]!==y||(+p[1]-1)!==m)return;
+    var t=h.dataset.t;
+    if(t==='pay')inc+=num(h.dataset.amt);
+    else if(t==='lesson')les++;
+    else if(t==='cancel-charged')cxC++;
+    else if(t==='cancel-free')cxF++;
+  });
+  var title=MONF[m]+(y!==new Date().getFullYear()?(' '+y):'');
+  $('#month').innerHTML=
+    '<div class="month-nav"><button class="ghost tiny" data-act="m-prev" aria-label="Предыдущий месяц">‹</button>'+
+    '<b>'+title+'</b>'+
+    (mOff<0?'<button class="ghost tiny" data-act="m-next" aria-label="Следующий месяц">›</button>':'')+
+    '</div><div class="mstats">'+
+    '<span class="mstat"><i>получено</i><b>'+rub(inc)+'</b></span>'+
+    '<span class="mstat"><i>уроков</i><b>'+les+'</b></span>'+
+    '<span class="mstat"><i>отмен со списанием</i><b>'+cxC+'</b></span>'+
+    '<span class="mstat"><i>отмен без списания</i><b>'+cxF+'</b></span></div>';
+}
+
+function msgFor(row){
+  var b=balOf(row), nm=firstName(row);
+  if(b<=0){
+    var dbt=Math.abs(b);
+    return ($('#tplDebt').textContent||'')
+      .replace(/\{имя\}/g,nm)
+      .replace(/\{долг\}/g,dbt?(lessonsTxt(dbt)+', '+rub(dbt*rateOf(row))):'ноль занятий')
+      .replace(/\{остаток\}/g,lessonsTxt(b));
+  }
+  return ($('#tplLow').textContent||'').replace(/\{имя\}/g,nm)
+    .replace(/\{остаток\}/g,lessonsTxt(b))
+    .replace(/\{долг\}/g,lessonsTxt(0));
+}
+function renderDue(){
+  var t=thr();
+  var list=$$('#rows .row').filter(function(r){return r.dataset.arch!=='1'&&balOf(r)<=t;});
+  var box=$('#due');
+  if(!list.length){box.hidden=true;box.innerHTML='';return;}
+  box.hidden=false;
+  box.innerHTML='<h2>Пора напомнить об оплате</h2><ul>'+list.map(function(r){
+    var b=balOf(r);
+    var st=b<0?('долг '+lessonsTxt(Math.abs(b))+', '+rub(Math.abs(b)*rateOf(r))):(b===0?'занятия закончились':('осталось '+lessonsTxt(b)));
+    var c=($('.contact',r).textContent||'').trim();
+    return '<li><b>'+esc($('.name',r).textContent)+'</b><em>'+st+(c?(' · '+esc(c)):'')+'</em>'+
+      '<button class="tiny" data-act="copy-due" data-sid="'+esc(r.dataset.id)+'">Скопировать текст</button></li>';
+  }).join('')+'</ul>';
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function toast(msg){
+  var old=document.getElementById('toast'); if(old)old.remove();
+  var t=document.createElement('div'); t.className='toast'; t.id='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(function(){if(t.parentNode)t.remove();},2400);
+}
+function copyText(s,okMsg){
+  function fallback(){
+    var ta=document.createElement('textarea'); ta.value=s; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{document.execCommand('copy');toast(okMsg);}catch(e){toast('Не удалось скопировать');}
+    ta.remove();
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(s).then(function(){toast(okMsg);},fallback);
+  } else fallback();
+}
+var armedKey=null,armedT=null;
+function needSecond(key,msg){
+  if(armedKey===key){clearTimeout(armedT);armedKey=null;return true;}
+  armedKey=key;toast(msg);clearTimeout(armedT);armedT=setTimeout(function(){armedKey=null;},4500);
+  return false;
+}
+function after(){renderMonth();renderDue();backup();}
+
+var curRow=null;
+function openPay(row){
+  curRow=row;
+  $('#payWho').textContent=($('.name',row).textContent||'')+' · '+rateOf(row)+' ₽ за урок';
+  $('#payD').value=todayISO(); $('#payN').value=5; $('#payS').value=Math.round(5*rateOf(row)); $('#payC').value='';
+  $$('#packs button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.n==='5'?'true':'false');});
+  $('#dlgPay').showModal();
+}
+function syncPaySum(){ if(curRow) $('#payS').value=Math.round(num($('#payN').value)*rateOf(curRow)); }
+function openCancel(row){
+  curRow=row; $('#cxWho').textContent=$('.name',row).textContent||'';
+  $('#cxD').value=todayISO(); $('#dlgCancel').showModal();
+}
+function renderDay(){
+  var host=$('#dayList');
+  host.innerHTML=$$('#rows .row').filter(function(r){return r.dataset.arch!=='1';}).map(function(r){
+    return '<div class="dayrow" data-sid="'+esc(r.dataset.id)+'"><span class="dn">'+esc($('.name',r).textContent)+'</span>'+
+      '<span class="db">'+fmt(balOf(r))+'</span>'+
+      '<button class="tiny" data-act="d-lesson">Провёл</button>'+
+      '<button class="tiny" data-act="d-charge">Отмена, списать</button>'+
+      '<button class="tiny" data-act="d-free">Отмена, оставить</button>'+
+      '<span class="done"></span></div>';
+  }).join('');
+}
+function openDay(){ $('#dayD').value=todayISO(); renderDay(); $('#dlgDay').showModal(); }
+
+function addStudent(){
+  commit(function(){
+    var el=$('#tpl-row').content.firstElementChild.cloneNode(true);
+    el.dataset.id='s'+Date.now().toString(36);
+    $('.rate',el).textContent=String(Math.round(num($('#defRate').value))||2000);
+    $('#rows').appendChild(el);
+    paint(el,0);
+  }).then(function(){
+    var last=$$('#rows .row').pop(); if(last){var n=$('.name',last); n.focus(); last.scrollIntoView({block:'center'});}
+  });
+}
+function restore(){
+  var raw=null; try{raw=localStorage.getItem('uroki.backup');}catch(e){}
+  if(!raw){toast('Копии на этом устройстве нет');return;}
+  if(!needSecond('restore','Это заменит текущие данные. Нажмите ещё раз'))return;
+  var d; try{d=JSON.parse(raw);}catch(e){toast('Копия повреждена');return;}
+  commit(function(){
+    if(d.thr)$('#thr').value=d.thr;
+    if(d.defRate)$('#defRate').value=d.defRate;
+    if(d.tplLow)$('#tplLow').textContent=d.tplLow;
+    if(d.tplDebt)$('#tplDebt').textContent=d.tplDebt;
+    var host=$('#rows'); host.innerHTML='';
+    (d.students||[]).forEach(function(s){
+      var el=$('#tpl-row').content.firstElementChild.cloneNode(true);
+      el.dataset.id=s.id||('s'+Math.random().toString(36).slice(2));
+      el.dataset.arch=s.arch||'0';
+      $('.name',el).textContent=s.name||'';
+      $('.rate',el).textContent=String(s.rate||2000);
+      $('.contact',el).textContent=s.contact||'';
+      $('.snote',el).textContent=s.note||'';
+      (s.h||[]).forEach(function(h){addH(el,{d:h.d,t:h.t,delta:h.delta,amt:h.amt,label:h.label,note:h.note});});
+      host.appendChild(el);
+      paint(el,s.bal||0);
+    });
+    toast('Данные восстановлены');
+  });
+}
+function exportBackup(){
+  var data=JSON.stringify(snapshot(),null,2), name='uroki-'+todayISO()+'.json';
+  var p=null; try{ if(window.claude&&window.claude.use) p=window.claude.use('downloads'); }catch(e){}
+  Promise.resolve(p).then(function(dl){
+    if(dl&&dl.save) return dl.save({filename:name,data:data}).then(function(){toast('Копия сохранена');});
+    throw 0;
+  }).catch(function(){ copyText(data,'Копия скопирована в буфер обмена'); });
+}
+
+function onClick(e){
+  var b=e.target.closest?e.target.closest('button[data-act]'):null;
+  if(!b)return;
+  var act=b.dataset.act, row=b.closest('.row');
+  if(act==='m-prev'){mOff--;renderMonth();return;}
+  if(act==='m-next'){if(mOff<0){mOff++;renderMonth();}return;}
+  if(act==='add'){addStudent();return;}
+  if(act==='day'){openDay();return;}
+  if(act==='export'){exportBackup();return;}
+  if(act==='restore'){restore();return;}
+  if(act==='close'){var dg=b.closest('dialog');if(dg)dg.close();return;}
+  if(act==='copy-due'){
+    var r=$('#rows .row[data-id="'+b.dataset.sid+'"]');
+    if(r)copyText(msgFor(r),'Текст скопирован'); return;
+  }
+  if(act==='pay-ok'){
+    if(!curRow)return;
+    var n=Math.round(num($('#payN').value)), sum=Math.round(num($('#payS').value));
+    if(!n){toast('Укажите количество уроков');return;}
+    var r2=curRow, dt=$('#payD').value||todayISO(), cm=($('#payC').value||'').trim();
+    commit(function(){doPay(r2,n,sum,dt,cm);});
+    $('#dlgPay').close(); toast('Оплата записана'); return;
+  }
+  if(act==='cx-free'||act==='cx-charge'){
+    if(!curRow)return;
+    var r3=curRow, dt3=$('#cxD').value||todayISO(), k=(act==='cx-charge')?'cancel-charged':'cancel-free';
+    commit(function(){doOp(r3,k,dt3);});
+    $('#dlgCancel').close(); toast(act==='cx-charge'?'Урок списан':'Урок сохранён'); return;
+  }
+  if(act==='d-lesson'||act==='d-charge'||act==='d-free'){
+    var dr=b.closest('.dayrow'); if(!dr)return;
+    var tr=$('#rows .row[data-id="'+dr.dataset.sid+'"]'); if(!tr)return;
+    var kind=act==='d-lesson'?'lesson':(act==='d-charge'?'cancel-charged':'cancel-free');
+    var dd=$('#dayD').value||todayISO();
+    commit(function(){doOp(tr,kind,dd);}).then(function(){
+      $('.db',dr).textContent=fmt(balOf(tr));
+      $('.done',dr).textContent=kind==='lesson'?'провёл ✓':(kind==='cancel-charged'?'списано ✓':'отмена ✓');
+    });
+    return;
+  }
+  if(!row)return;
+  if(act==='lesson'){commit(function(){doOp(row,'lesson',todayISO());});toast('Занятие записано');return;}
+  if(act==='cancel'){openCancel(row);return;}
+  if(act==='pay'){openPay(row);return;}
+  if(act==='copy'){copyText(msgFor(row),'Текст скопирован');return;}
+  if(act==='undo'){
+    if(!needSecond('undo:'+row.dataset.id,'Отменить последнюю запись? Нажмите ещё раз'))return;
+    commit(function(){if(!doUndo(row))toast('История пуста');});return;
+  }
+  if(act==='arch'){commit(function(){row.dataset.arch=row.dataset.arch==='1'?'0':'1';});return;}
+  if(act==='del'){
+    if(!needSecond('del:'+row.dataset.id,'Удалить ученика и всю историю? Нажмите ещё раз'))return;
+    commit(function(){row.remove();});toast('Ученик удалён');return;
+  }
+}
+
+function bind(){
+  document.addEventListener('click',onClick);
+  document.addEventListener('claude:edit',function(){renderMonth();renderDue();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&e.target.matches&&e.target.matches('.name,.rate,.contact,.h-note')){e.preventDefault();e.target.blur();}
+  });
+  document.addEventListener('paste',function(e){
+    var t=e.target; if(!t||!t.isContentEditable)return;
+    var cd=e.clipboardData||window.clipboardData; if(!cd)return;
+    e.preventDefault();
+    var txt=cd.getData('text')||'';
+    if(!t.classList.contains('tpl'))txt=txt.replace(/\s+/g,' ').trim();
+    document.execCommand('insertText',false,txt);
+  });
+  document.addEventListener('focusout',function(e){
+    var t=e.target;
+    if(t&&t.classList&&t.classList.contains('rate')){
+      var row=t.closest('.row'); if(!row)return;
+      var v=Math.round(num(t.textContent));
+      commit(function(){t.textContent=String(v>0?v:0);paint(row,balOf(row));});
+    }
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.id==='arch'){$('#rows').dataset.localArch=t.checked?'1':'0';return;}
+    if(t.id==='thr'){commit(function(){$$('#rows .row').forEach(function(r){paint(r,balOf(r));});});return;}
+    if(t.id==='payN'){syncPaySum();return;}
+  });
+  document.addEventListener('input',function(e){
+    if(e.target.id==='payN'){syncPaySum();
+      $$('#packs button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.n===String(Math.round(num($('#payN').value)))?'true':'false');});}
+  });
+  var packs=$('#packs');
+  if(packs)packs.addEventListener('click',function(e){
+    var b=e.target.closest('button[data-n]'); if(!b)return;
+    $('#payN').value=b.dataset.n; syncPaySum();
+    $$('#packs button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
+  });
+}
+function loadLocal(){
+  var raw=null; try{raw=localStorage.getItem('uroki.backup');}catch(e){}
+  if(!raw)return false;
+  var d; try{d=JSON.parse(raw);}catch(e){return false;}
+  if(!d||!d.students||!d.students.length)return false;
+  if(d.thr)$('#thr').value=d.thr;
+  if(d.defRate)$('#defRate').value=d.defRate;
+  if(d.tplLow)$('#tplLow').textContent=d.tplLow;
+  if(d.tplDebt)$('#tplDebt').textContent=d.tplDebt;
+  var host=$('#rows'); host.innerHTML='';
+  d.students.forEach(function(s){
+    var el=$('#tpl-row').content.firstElementChild.cloneNode(true);
+    el.dataset.id=s.id||('s'+Math.random().toString(36).slice(2));
+    el.dataset.arch=s.arch||'0';
+    $('.name',el).textContent=s.name||'';
+    $('.rate',el).textContent=String(s.rate||2000);
+    $('.contact',el).textContent=s.contact||'';
+    $('.snote',el).textContent=s.note||'';
+    (s.h||[]).forEach(function(h){addH(el,{d:h.d,t:h.t,delta:h.delta,amt:h.amt,label:h.label,note:h.note});});
+    host.appendChild(el);
+    paint(el,s.bal||0);
+  });
+  return true;
+}
+function init(){
+  var ar=$('#arch'); if(ar)$('#rows').dataset.localArch=ar.checked?'1':'0';
+  renderMonth(); renderDue();
+  artReady.then(function(a){
+    setChip(a?'ok':'local');
+    // Standalone build (no artifact runtime): the browser copy is the only store,
+    // so restore it before the served markup is treated as current.
+    if(!a){ if(loadLocal()){renderMonth();renderDue();} else backup(); }
+    else backup();
+  });
+}
+if(!window.__urokiBound){window.__urokiBound=true;bind();}
+init();
+})();
+</script>

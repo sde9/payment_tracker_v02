@@ -42,7 +42,11 @@ module.exports = async (req, res) => {
   try {
     if (req.method === 'GET') {
       const raw = await redis(['GET', KEY]);
-      res.status(200).json({ state: raw ? JSON.parse(raw) : null });
+      // required говорит странице, показывать ли выход: без пароля выходить не из чего.
+      res.status(200).json({
+        state: raw ? JSON.parse(raw) : null,
+        auth: { required: auth.required() },
+      });
       return;
     }
 

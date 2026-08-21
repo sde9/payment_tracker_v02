@@ -109,6 +109,8 @@ const waitChip = (p, needle) =>
   await p.waitForTimeout(1500);
   ok('индикатор при обрыве', await chip(p), 'не сохранилось, проверьте сеть');
   ok('изменение осталось на экране', await p.$eval('.row[data-id="s2"] .bal-n', (e) => e.textContent), '3');
+  ok('без пароля выход скрыт', await p.$eval('[data-act="logout"]', (e) => e.hidden), true);
+  ok('без пароля видно предупреждение', await p.$eval('#openWarn', (e) => e.hidden), false);
   await p.close();
   await ctx2.close();
 
@@ -139,6 +141,7 @@ const waitChip = (p, needle) =>
   ok('данные приехали с сервера', await p3.$eval('.row[data-id="s1"] .bal-n', (e) => e.textContent), '5');
   ok('данные на сервере не пострадали', store.get('uroki:state') === snapshotBefore, true);
   ok('кнопка выхода видна', await p3.$eval('[data-act="logout"]', (e) => e.hidden), false);
+  ok('предупреждение скрыто', await p3.$eval('#openWarn', (e) => e.hidden), true);
 
   await p3.reload();
   await waitChip(p3, 'сервер');
@@ -152,8 +155,15 @@ const waitChip = (p, needle) =>
   // Выход.
   await p3.click('.settings > summary');
   await p3.click('[data-act="logout"]');
+  await p3.waitForTimeout(150);
+  ok('выход не срабатывает с первого клика', await p3.$eval('#gate', (e) => e.hidden), true);
+  await p3.click('[data-act="logout"]');
   await p3.waitForSelector('#gate:not([hidden])', { timeout: 8000 });
   ok('после выхода снова гейт', await p3.$eval('#gate', (e) => e.hidden), false);
+  ok('кука погашена', (await ctx3.cookies()).filter((c) => c.name === 'uroki_auth' && c.value).length, 0);
+  await p3.reload();
+  await p3.waitForSelector('#gate:not([hidden])', { timeout: 8000 });
+  ok('после перезагрузки всё ещё гейт', await p3.$eval('#gate', (e) => e.hidden), false);
 
   // Перебор пароля упирается в счётчик.
   const codes = await p3.evaluate(async () => {

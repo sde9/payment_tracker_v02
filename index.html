@@ -82,6 +82,9 @@ h1{font-family:"Literata",Georgia,serif; font-weight:600; font-size:27px; margin
 .due li b{font-family:"Literata",Georgia,serif; font-weight:600}
 .due li em{font-style:normal; color:var(--ink-2); font-size:13px}
 
+.warnbar{margin:0; padding:13px 16px; border-color:var(--bad); background:var(--bad-soft); color:var(--bad); font-size:14px}
+.warnbar[hidden]{display:none}
+.warnbar b{font-weight:600}
 /* toolbar */
 .toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
 button{font:inherit; cursor:pointer; border-radius:7px; border:1px solid var(--line-2);
@@ -231,6 +234,8 @@ dialog::backdrop{background:rgba(12,12,20,.45)}
   <artifact-local><section class="panel month" id="month"></section></artifact-local>
 
   <artifact-local><section class="panel due" id="due" hidden></section></artifact-local>
+
+  <artifact-local><p class="panel warnbar" id="openWarn" hidden>Страница открыта всем, кто знает адрес. Задайте переменную <b>APP_PASSWORD</b> в настройках проекта на Vercel и передеплойте.</p></artifact-local>
 
   <div class="toolbar">
     <button class="primary" data-act="add">+ Ученик</button>
@@ -904,7 +909,10 @@ function startServer(){
     .then(function(j){
       if(j===null)return;
       MODE='server'; hideGate();
-      var btn=$('[data-act="logout"]'); if(btn)btn.hidden=false;
+      // Выходить есть смысл только если пароль на сервере задан.
+      var needsPw=!!(j&&j.auth&&j.auth.required);
+      var btn=$('[data-act="logout"]'); if(btn)btn.hidden=!needsPw;
+      var warn=$('#openWarn'); if(warn)warn.hidden=needsPw;
       if(j&&j.state&&applySnapshot(j.state)){
         renderMonth(); renderDue(); backup(); setChip('server');
       } else {
@@ -927,7 +935,10 @@ function login(pw){
     .catch(function(){showGate('Сервер не отвечает');});
 }
 function logout(){
-  fetch('/api/session',{method:'DELETE'}).then(function(){location.reload();},function(){location.reload();});
+  if(!needSecond('logout','Выйти из аккаунта? Нажмите ещё раз'))return;
+  fetch('/api/session',{method:'DELETE',cache:'no-store'})
+    .then(function(){return null;},function(){return null;})
+    .then(function(){location.replace(location.pathname+'?logout='+Date.now());});
 }
 // Загрузка снимка из файла: так переносят данные между устройствами и версиями.
 function importFile(file){

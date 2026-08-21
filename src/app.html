@@ -501,18 +501,27 @@ var artReady=(function(){
   try{ if(window.claude&&window.claude.use) return window.claude.use('artifact').then(function(a){art=a;return a;},function(){return null;}); }catch(e){}
   return Promise.resolve(null);
 })();
+var CHIP={
+  artifact:['сохраняется автоматически',0],
+  server:['сохранено на сервере',0],
+  saving:['сохраняю…',0],
+  checking:['проверяю хранилище…',0],
+  'server-error':['не сохранилось, проверьте сеть',1],
+  'artifact-error':['не сохранилось, скачайте копию',1],
+  local:['только в этом браузере',1]
+};
 function setChip(mode){
   var c=$('#chip'); if(!c)return;
-  if(mode==='ok'){c.textContent='сохраняется автоматически';c.removeAttribute('data-mode');}
-  else if(mode==='err'){c.textContent='не сохранилось, скачайте копию';c.dataset.mode='local';}
-  else {c.textContent='только в этом браузере';c.dataset.mode='local';}
+  var v=CHIP[mode]||CHIP.local;
+  c.textContent=v[0];
+  if(v[1])c.dataset.mode='local'; else c.removeAttribute('data-mode');
 }
 function commit(fn){
   return artReady.then(function(a){
     if(a&&typeof a.sync==='function'){
-      return a.sync(fn).then(function(){setChip('ok');},function(e){console.warn('sync',e);setChip('err');});
+      return a.sync(fn).then(function(){setChip('artifact');},function(e){console.warn('sync',e);setChip('artifact-error');});
     }
-    fn(); setChip('local');
+    fn();
   }).then(after);
 }
 
@@ -605,7 +614,22 @@ function needSecond(key,msg){
   armedKey=key;toast(msg);clearTimeout(armedT);armedT=setTimeout(function(){armedKey=null;},4500);
   return false;
 }
-function after(){renderMonth();renderDue();backup();}
+// Хранилище выбирается при загрузке: 'artifact' - рантайм claude.ai,
+// 'server' - функция /api/state поверх Redis, 'local' - только localStorage.
+var MODE='local', saveTimer=null, saving=false, dirty=false;
+function pushState(){
+  if(MODE!=='server')return;
+  dirty=true; clearTimeout(saveTimer); saveTimer=setTimeout(flush,700);
+}
+function flush(){
+  if(MODE!=='server'||saving||!dirty)return;
+  saving=true; dirty=false; setChip('saving');
+  fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(snapshot())})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(function(){saving=false;setChip('server');if(dirty)flush();})
+    .catch(function(e){saving=false;dirty=true;setChip('server-error');console.warn('save',e);});
+}
+function after(){renderMonth();renderDue();backup();pushState();}
 
 var curRow=null;
 function openPay(row){
@@ -767,6 +791,11 @@ function bind(){
     if(e.target.id==='payN'){syncPaySum();
       $$('#packs button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.n===String(Math.round(num($('#payN').value)))?'true':'false');});}
   });
+  window.addEventListener('beforeunload',function(){
+    if(MODE==='server'&&dirty&&navigator.sendBeacon){
+      try{navigator.sendBeacon('/api/state',new Blob([JSON.stringify(snapshot())],{type:'application/json'}));}catch(e){}
+    }
+  });
   var packs=$('#packs');
   if(packs)packs.addEventListener('click',function(e){
     var b=e.target.closest('button[data-n]'); if(!b)return;
@@ -774,10 +803,7 @@ function bind(){
     $$('#packs button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
   });
 }
-function loadLocal(){
-  var raw=null; try{raw=localStorage.getItem('uroki.backup');}catch(e){}
-  if(!raw)return false;
-  var d; try{d=JSON.parse(raw);}catch(e){return false;}
+function applySnapshot(d){
   if(!d||!d.students||!d.students.length)return false;
   if(d.thr)$('#thr').value=d.thr;
   if(d.defRate)$('#defRate').value=d.defRate;
@@ -798,15 +824,40 @@ function loadLocal(){
   });
   return true;
 }
+function loadLocal(){
+  var raw=null; try{raw=localStorage.getItem('uroki.backup');}catch(e){}
+  if(!raw)return false;
+  var d; try{d=JSON.parse(raw);}catch(e){return false;}
+  return applySnapshot(d);
+}
+// Автономная сборка: пробуем серверное хранилище, иначе живём на localStorage.
+function startServer(){
+  if(location.protocol==='file:'){goLocal();return Promise.resolve();}
+  setChip('checking');
+  return fetch('/api/state',{cache:'no-store'})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(function(j){
+      MODE='server';
+      if(j&&j.state&&applySnapshot(j.state)){
+        renderMonth(); renderDue(); backup(); setChip('server');
+      } else {
+        // Хранилище пустое: заливаем то, что есть на руках, как начальное состояние.
+        if(loadLocal()){renderMonth();renderDue();}
+        backup(); setChip('server'); dirty=true; flush();
+      }
+    })
+    .catch(function(e){console.warn('storage',e);goLocal();});
+}
+function goLocal(){
+  MODE='local'; setChip('local');
+  if(loadLocal()){renderMonth();renderDue();} else backup();
+}
 function init(){
   var ar=$('#arch'); if(ar)$('#rows').dataset.localArch=ar.checked?'1':'0';
   renderMonth(); renderDue();
   artReady.then(function(a){
-    setChip(a?'ok':'local');
-    // Standalone build (no artifact runtime): the browser copy is the only store,
-    // so restore it before the served markup is treated as current.
-    if(!a){ if(loadLocal()){renderMonth();renderDue();} else backup(); }
-    else backup();
+    if(a){MODE='artifact';setChip('artifact');backup();return;}
+    return startServer();
   });
 }
 if(!window.__urokiBound){window.__urokiBound=true;bind();}

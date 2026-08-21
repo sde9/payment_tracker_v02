@@ -1,45 +1,16 @@
 // Хранилище состояния приложения: один ключ в Redis, в нём весь снимок.
 // Учеников до нескольких десятков, история операций растёт медленно,
 // поэтому дробить на таблицы нет смысла: читаем и пишем целиком.
-//
-// Redis подключается через Vercel Marketplace (Upstash). Интеграция сама
-// кладёт в проект переменные окружения; имена у разных версий отличаются,
-// поэтому проверяем несколько вариантов.
+const { redis, hasRedis } = require('../lib/store.js');
+const auth = require('../lib/auth.js');
 
 const KEY = 'uroki:state';
 const KEY_PREV = 'uroki:state:prev';
 const MAX_BYTES = 2 * 1024 * 1024;
 
-function creds() {
-  const url =
-    process.env.KV_REST_API_URL ||
-    process.env.UPSTASH_REDIS_REST_URL ||
-    process.env.REDIS_REST_API_URL;
-  const token =
-    process.env.KV_REST_API_TOKEN ||
-    process.env.UPSTASH_REDIS_REST_TOKEN ||
-    process.env.REDIS_REST_API_TOKEN;
-  return url && token ? { url: url.replace(/\/+$/, ''), token } : null;
-}
-
-async function redis(command) {
-  const c = creds();
-  const r = await fetch(c.url, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + c.token,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(command),
-  });
-  const text = await r.text();
-  if (!r.ok) throw new Error('redis ' + r.status + ': ' + text.slice(0, 200));
-  return JSON.parse(text).result;
-}
-
 function readBody(req) {
-  if (req.body && typeof req.body === 'object') return req.body;
-  if (typeof req.body === 'string') return JSON.parse(req.body);
+  if (req.body && typeof req.body === 'object') return Promise.resolve(req.body);
+  if (typeof req.body === 'string') return Promise.resolve(JSON.parse(req.body));
   return new Promise((resolve, reject) => {
     let raw = '';
     req.on('data', (chunk) => {
@@ -56,7 +27,11 @@ function readBody(req) {
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
 
-  if (!creds()) {
+  if (!auth.isAuthed(req)) {
+    res.status(401).json({ error: 'auth-required' });
+    return;
+  }
+  if (!hasRedis()) {
     res.status(503).json({
       error: 'storage-not-configured',
       hint: 'Подключите Upstash Redis через Vercel Marketplace и передеплойте проект.',

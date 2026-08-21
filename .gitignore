@@ -4,3 +4,7 @@ public/
 preview.html
 *.png
 .vercel/
+
+# личные данные не место в публичном репозитории
+seed*.json
+*.local.json

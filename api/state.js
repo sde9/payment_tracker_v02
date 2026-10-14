@@ -3,6 +3,7 @@
 // поэтому дробить на таблицы нет смысла: читаем и пишем целиком.
 const { redis, hasRedis } = require('../lib/store.js');
 const auth = require('../lib/auth.js');
+const days = require('../lib/days.js');
 
 const KEY = 'uroki:state';
 const KEY_PREV = 'uroki:state:prev';
@@ -57,9 +58,12 @@ module.exports = async (req, res) => {
         res.status(400).json({ error: 'bad-state' });
         return;
       }
+      const json = JSON.stringify(state);
       const prev = await redis(['GET', KEY]);
       if (prev) await redis(['SET', KEY_PREV, prev]);
-      await redis(['SET', KEY, JSON.stringify(state)]);
+      await redis(['SET', KEY, json]);
+      // Копия за день: последний снимок каждого дня живёт days.KEEP дней.
+      try { await days.remember(json); } catch (e) { /* копия не важнее самого сохранения */ }
       res.status(200).json({ ok: true, savedAt: Date.now() });
       return;
     }

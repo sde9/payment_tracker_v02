@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Учёт предоплаченных занятий: баланс уроков, оплаты, отмены и напоминания об оплате.">
+<meta name="description" content="Учёт предоплаченных занятий: баланс уроков, оплаты, отмены, календарь, конспекты и напоминания об оплате.">
 <title>Уроки и оплаты</title>
 </head>
 <body>
@@ -51,7 +51,6 @@ body{
   font-family:"Golos Text","Segoe UI",Roboto,system-ui,sans-serif;
   font-size:15px; line-height:1.5; -webkit-text-size-adjust:100%;
 }
-artifact-local{display:contents}
 .wrap{max-width:920px; margin:0 auto; padding:28px 18px 80px; display:flex; flex-direction:column; gap:18px}
 
 /* header */
@@ -224,6 +223,151 @@ textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:v
   .lhead{display:none}
   .mstats{margin-left:0; gap:16px}
 }
+
+/* ---------- вкладки ---------- */
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+.tabs button{border:0; border-radius:0; background:transparent; color:var(--ink-2); padding:9px 13px 8px;
+  border-bottom:2px solid transparent; margin-bottom:-1px; font-weight:500}
+.tabs button:hover{background:transparent; color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--accent)}
+.view{display:flex; flex-direction:column; gap:18px}
+.view[hidden]{display:none}
+.ph{margin:0; font-size:12px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3); font-weight:600}
+.phrow{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+
+/* ---------- расписание и неотмеченные ---------- */
+.sched{padding:13px 16px 8px; display:flex; flex-direction:column; gap:8px}
+.sched[hidden]{display:none}
+.dayg{display:flex; flex-direction:column}
+.dayg>.dl{font-size:12.5px; color:var(--ink-2); font-weight:600; padding:8px 0 4px}
+.evr{display:grid; grid-template-columns:50px minmax(0,1fr) auto; gap:2px 12px; align-items:center; padding:7px 0; border-top:1px solid var(--line)}
+.evr.cont{border-top:0; padding-top:0}
+.evr .tm{font-variant-numeric:tabular-nums; color:var(--ink-2); font-size:13.5px}
+.evr .ew{min-width:0; font-size:14.5px; line-height:1.35}
+.evr .ew b{font-family:"Literata",Georgia,serif; font-weight:600}
+.evr .ew small{display:block; color:var(--ink-3); font-size:12px}
+.evr .ea{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; align-items:center}
+.mark{font-size:12.5px; color:var(--ok); white-space:nowrap}
+.mark.free{color:var(--ink-3)}
+.mark.bad{color:var(--bad)}
+.unm{border-color:var(--warn); background:var(--warn-soft)}
+.unm .ph{color:var(--warn)}
+.unm .evr{border-top-color:color-mix(in srgb, var(--warn) 25%, transparent)}
+.gnote{margin:0; font-size:13px; color:var(--ink-3)}
+.gnote.err{color:var(--bad)}
+
+/* ---------- карточка ученика: календарь и конспекты ---------- */
+.nx{font-size:12.5px; color:var(--ink-2)}
+.nx:empty{display:none}
+.fld{display:flex; flex-direction:column; gap:3px}
+.fld>.lbl{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3)}
+.fld .ed{font-size:13px; color:var(--ink-2); outline:none; border-bottom:1px dashed var(--line-2); padding:2px 0; overflow-wrap:anywhere}
+.fld .ed:focus{border-bottom-color:var(--accent); color:var(--ink)}
+.lastnotes{display:flex; flex-direction:column; gap:6px}
+.lastnotes:empty{display:none}
+.nt{border:1px solid var(--line); border-radius:8px; background:var(--surface-2)}
+.nt>summary{cursor:pointer; list-style:none; padding:7px 10px; font-size:13px; color:var(--ink-2); display:flex; gap:8px; align-items:baseline}
+.nt>summary::-webkit-details-marker{display:none}
+.nt>summary::before{content:"▸"; font-size:10px; transition:transform .15s}
+.nt[open]>summary::before{transform:rotate(90deg)}
+.nt>summary b{color:var(--ink); font-weight:600}
+.h .nt{margin-top:5px; background:transparent}
+.h .nt>summary{padding:3px 8px; font-size:12px}
+.md{padding:2px 12px 10px; font-size:13.5px; line-height:1.55; color:var(--ink)}
+.md h4{margin:10px 0 3px; font-size:13.5px; font-weight:600}
+.md ul{margin:2px 0; padding-left:18px}
+.md li{margin:1px 0}
+.md li.cont{list-style:none; color:var(--ink-2)}
+.md p{margin:4px 0}
+.md a{color:var(--accent)}
+.h[data-src="cal"] .h-l{color:var(--ink-3)}
+.hmore{font-size:12.5px}
+
+/* ---------- обзор ---------- */
+.kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+.kpi{padding:12px 14px; display:flex; flex-direction:column; gap:2px}
+.kpi i{font-style:normal; font-size:12px; color:var(--ink-3)}
+.kpi b{font-size:24px; font-weight:600; letter-spacing:-.01em}
+.kpi small{font-size:12px; color:var(--ink-3)}
+.chart{padding:14px 16px; display:flex; flex-direction:column; gap:10px; position:relative}
+.chart h2{margin:0; font-size:15px; font-weight:600}
+.chart .sub2{margin:-6px 0 0; font-size:12.5px; color:var(--ink-3)}
+.legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-2)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.legend i{width:10px; height:10px; border-radius:3px; display:inline-block}
+.viz{--s1:#2a78d6; --s2:#eb6834; --pos:#2a78d6; --neg:#e34948; --grid:#e1e0d9; --axis:#c3c2b7; --muted:#898781}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .viz{--s1:#3987e5; --s2:#d95926; --pos:#3987e5; --neg:#e66767; --grid:#2c2c33; --axis:#3d3d4c; --muted:#8c8ea0}
+}
+:root[data-theme="dark"] .viz{--s1:#3987e5; --s2:#d95926; --pos:#3987e5; --neg:#e66767; --grid:#2c2c33; --axis:#3d3d4c; --muted:#8c8ea0}
+.viz svg{display:block; width:100%; height:auto; overflow:visible}
+.viz text{font:12px "Golos Text",system-ui,sans-serif; fill:var(--muted)}
+.viz text.lbl{fill:var(--ink-2)}
+.viz text.val{fill:var(--ink); font-weight:600}
+.viz .hit{fill:transparent; cursor:default}
+.viz .hit:hover, .viz .hit:focus{fill:color-mix(in srgb, var(--ink) 5%, transparent); outline:none}
+.tip{position:fixed; z-index:120; pointer-events:none; background:var(--surface); color:var(--ink); border:1px solid var(--line);
+  border-radius:8px; padding:7px 10px; font-size:12.5px; line-height:1.45; box-shadow:var(--shadow); max-width:260px}
+.tip[hidden]{display:none}
+.tip b{font-weight:600}
+.tview>summary{cursor:pointer; font-size:12.5px; color:var(--ink-3); list-style:none}
+.tview>summary::-webkit-details-marker{display:none}
+.tview table{border-collapse:collapse; width:100%; margin-top:8px; font-size:13px}
+.tview th,.tview td{padding:5px 8px; border-bottom:1px solid var(--line); text-align:right; font-variant-numeric:tabular-nums}
+.tview th:first-child,.tview td:first-child{text-align:left}
+.tview th{font-weight:600; color:var(--ink-2); font-size:12px}
+.lst{list-style:none; margin:0; padding:0; display:flex; flex-direction:column}
+.lst li{display:flex; gap:10px; padding:6px 0; border-top:1px solid var(--line); font-size:14px; align-items:baseline; flex-wrap:wrap}
+.lst li:first-child{border-top:0}
+.lst li span:first-child{color:var(--ink-3); font-variant-numeric:tabular-nums; min-width:92px; font-size:13px}
+.lst li em{font-style:normal; color:var(--ink-3); font-size:12.5px}
+.two-col{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+.pad{padding:14px 16px; display:flex; flex-direction:column; gap:10px}
+
+/* ---------- посты ---------- */
+.posts{display:flex; flex-direction:column; gap:14px}
+.post{padding:14px 16px; display:flex; flex-direction:column; gap:10px}
+.post header{display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.post h3{margin:0; font-family:"Literata",Georgia,serif; font-weight:600; font-size:17px}
+.post .meta2{font-size:12.5px; color:var(--ink-3)}
+.slides{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:4px; font-size:14px}
+.cap{white-space:pre-wrap; font-size:14px; line-height:1.55; background:var(--surface-2); border-radius:8px; padding:10px 12px}
+.tags{font-size:13px; color:var(--accent)}
+.pst{font-size:11px; letter-spacing:.06em; text-transform:uppercase; font-weight:600; padding:2px 8px; border-radius:999px; background:var(--surface-2); color:var(--ink-2)}
+.pst[data-s="опубликован"]{background:var(--ok-soft); color:var(--ok)}
+.pst[data-s="отклонён"]{background:var(--bad-soft); color:var(--bad)}
+select{font:inherit; color:var(--ink); background:var(--surface); border:1px solid var(--line-2); border-radius:7px; padding:6px 9px; max-width:100%}
+.hbtns select{font-size:12.5px; padding:4px 8px}
+
+/* ---------- импорт и привязка ---------- */
+dialog.wide{max-width:min(96vw,700px)}
+.dbody.scroll{max-height:62vh; overflow-y:auto}
+.people{display:flex; flex-direction:column; border-top:1px solid var(--line)}
+.person{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,220px); gap:6px 12px; padding:10px 0; border-bottom:1px solid var(--line); align-items:start}
+.person .pn{font-weight:600; font-size:14.5px; overflow-wrap:anywhere}
+.person .pm{font-size:12px; color:var(--ink-3); overflow-wrap:anywhere}
+.person .pc{display:flex; flex-direction:column; gap:6px}
+.person .pnew{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+.person .pnew[hidden]{display:none}
+.person .pnew input[type="text"]{width:150px}
+.person .pnew input[type="number"]{width:90px}
+.person .pev{grid-column:1 / -1}
+.person .pev>summary{cursor:pointer; font-size:12.5px; color:var(--ink-3); list-style:none}
+.person .pev>summary::-webkit-details-marker{display:none}
+.evlist{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:2px 10px; padding:6px 0 0; font-size:12.5px; color:var(--ink-2)}
+.evlist label{display:flex; gap:6px; align-items:center}
+.plan{font-size:13.5px; background:var(--accent-soft); border-radius:8px; padding:10px 12px; line-height:1.5}
+.plan b{font-weight:600}
+.chk{display:inline-flex; gap:6px; align-items:center; font-size:13px; color:var(--ink-2)}
+.status{font-size:13px; color:var(--ink-2); margin:0}
+.status.err{color:var(--bad)}
+
+@media (max-width:640px){
+  .two-col{grid-template-columns:1fr}
+  .person{grid-template-columns:1fr}
+  .evr{grid-template-columns:44px minmax(0,1fr)}
+  .evr .ea{grid-column:2; justify-content:flex-start}
+}
 </style>
 
 <div class="wrap">
@@ -233,218 +377,100 @@ textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:v
       <h1>Уроки и оплаты</h1>
       <p class="sub">Частные занятия английским · 45 минут · предоплата пакетами</p>
     </div>
-    <artifact-local><span class="chip" id="chip">проверяю сохранение…</span></artifact-local>
+    <span class="chip" id="chip">проверяю сохранение…</span>
   </header>
 
-  <artifact-local><section class="panel month" id="month"></section></artifact-local>
+  <nav class="tabs" role="tablist" aria-label="Разделы">
+    <button role="tab" id="tab-main" aria-selected="true" aria-controls="v-main" data-tab="main">Ученики</button>
+    <button role="tab" id="tab-dash" aria-selected="false" aria-controls="v-dash" data-tab="dash">Обзор</button>
+    <button role="tab" id="tab-posts" aria-selected="false" aria-controls="v-posts" data-tab="posts">Посты</button>
+  </nav>
 
-  <artifact-local><section class="panel due" id="due" hidden></section></artifact-local>
+  <div class="view" id="v-main" role="tabpanel" aria-labelledby="tab-main">
 
-  <artifact-local><p class="panel warnbar" id="openWarn" hidden>Страница открыта всем, кто знает адрес. Задайте переменную <b>APP_PASSWORD</b> в настройках проекта на Vercel и передеплойте.</p></artifact-local>
+    <section class="panel month" id="month"></section>
 
-  <div class="toolbar">
-    <button class="primary" data-act="add">+ Ученик</button>
-    <button data-act="day">Отметить день</button>
-    <artifact-local><label class="tgl"><input type="checkbox" id="arch"> показать архив</label></artifact-local>
+    <section class="panel due" id="due" hidden></section>
+
+    <section class="panel sched unm" id="unmarked" hidden></section>
+
+    <section class="panel sched" id="week" hidden></section>
+
+    <p class="panel warnbar" id="openWarn" hidden>Страница открыта всем, кто знает адрес. Задайте переменную <b>APP_PASSWORD</b> в настройках проекта на Vercel и передеплойте.</p>
+
+    <div class="toolbar">
+      <button class="primary" data-act="add">+ Ученик</button>
+      <button data-act="day">Отметить день</button>
+      <label class="tgl"><input type="checkbox" id="arch"> показать архив</label>
+    </div>
+
+    <section class="panel ledger">
+      <div class="lhead"><span>Ученик</span><span>Остаток</span><span>Действия</span></div>
+      <div class="rows" id="rows"></div>
+      <p class="empty">Пока никого нет. Нажмите «+ Ученик» или загрузите файл в настройках.</p>
+    </section>
+
+    <details class="panel settings" id="settings">
+      <summary>Настройки и резервные копии</summary>
+      <div class="sbody">
+        <div class="field">
+          <label for="thr">Напоминать, когда осталось уроков</label>
+          <input type="number" id="thr" value="2" min="0" max="20" step="1">
+        </div>
+        <div class="field">
+          <label>Текст, когда баланс заканчивается</label>
+          <div class="tpl" id="tplLow" contenteditable="plaintext-only"></div>
+        </div>
+        <div class="field">
+          <label>Текст, когда есть долг</label>
+          <div class="tpl" id="tplDebt" contenteditable="plaintext-only"></div>
+        </div>
+        <p class="hint">Подстановки: <b>{имя}</b>, <b>{остаток}</b> (например «2 занятия»), <b>{долг}</b> (например «3 занятия, 6 000 ₽»).</p>
+        <div class="field">
+          <label for="defRate">Ставка по умолчанию для новых учеников, ₽</label>
+          <input type="number" id="defRate" value="2000" min="0" step="50">
+        </div>
+
+        <div class="field">
+          <label for="calWords">Уроки в календаре: слова в названии события, через запятую</label>
+          <input type="text" id="calWords" value="по английскому, Silver Fern">
+        </div>
+        <p class="gnote" id="gStatus">Календарь и конспекты работают в версии на сервере.</p>
+        <div class="hbtns">
+          <button data-act="cal-import">Загрузить историю из календаря</button>
+          <button data-act="g-refresh">Обновить календарь и конспекты</button>
+        </div>
+
+        <div class="field">
+          <label for="daySel">Копии на сервере, по одной за день</label>
+          <div class="hbtns">
+            <select id="daySel" aria-label="Дата копии"><option value="">открыть настройки, чтобы загрузить список</option></select>
+            <button data-act="day-restore">Восстановить</button>
+            <button data-act="day-download">Скачать</button>
+          </div>
+        </div>
+        <p class="gnote" id="driveStatus"></p>
+        <div class="hbtns">
+          <button data-act="export">Скачать резервную копию</button>
+          <button data-act="import">Загрузить из файла</button>
+          <button data-act="paste">Вставить JSON</button>
+          <button data-act="restore">Восстановить с этого устройства</button>
+          <button data-act="logout" hidden>Выйти</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+        <p class="hint">Копия в браузере обновляется при каждом изменении. На сервере хранится последний снимок каждого дня за 35 дней, в Google Drive раз в день появляется файл.</p>
+      </div>
+    </details>
   </div>
 
-  <section class="panel ledger">
-    <div class="lhead"><span>Ученик</span><span>Остаток</span><span>Действия</span></div>
-    <div class="rows" id="rows">
+  <div class="view" id="v-dash" role="tabpanel" aria-labelledby="tab-dash" hidden></div>
 
-      <div class="row" data-id="s1" data-state="ok" data-arch="0">
-        <div class="who">
-          <span class="name" contenteditable="plaintext-only">Анна Петрова</span>
-          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-        </div>
-        <div class="bal"><span class="bal-n">6</span><span class="bal-m">12 000 ₽</span><span class="tag"></span></div>
-        <div class="acts">
-          <button class="tiny" data-act="lesson">Провёл</button>
-          <button class="tiny" data-act="cancel">Отмена</button>
-          <button class="tiny" data-act="pay">Оплата</button>
-          <button class="tiny ghost" data-act="copy">Текст</button>
-        </div>
-        <details class="hist"><summary>История</summary><div class="histbody">
-          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
-          <div class="hrows">
-            <div class="h" data-d="2026-08-20" data-t="init" data-delta="6" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">+6</span></div>
-          </div>
-          <div class="hbtns">
-            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-            <button class="tiny ghost" data-act="arch"></button>
-            <button class="tiny ghost" data-act="del">Удалить</button>
-          </div>
-        </div></details>
-      </div>
-
-      <div class="row" data-id="s2" data-state="ok" data-arch="0">
-        <div class="who">
-          <span class="name" contenteditable="plaintext-only">Борис Ковалёв</span>
-          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-        </div>
-        <div class="bal"><span class="bal-n">4</span><span class="bal-m">8 000 ₽</span><span class="tag"></span></div>
-        <div class="acts">
-          <button class="tiny" data-act="lesson">Провёл</button>
-          <button class="tiny" data-act="cancel">Отмена</button>
-          <button class="tiny" data-act="pay">Оплата</button>
-          <button class="tiny ghost" data-act="copy">Текст</button>
-        </div>
-        <details class="hist"><summary>История</summary><div class="histbody">
-          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
-          <div class="hrows">
-            <div class="h" data-d="2026-08-20" data-t="init" data-delta="4" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">+4</span></div>
-          </div>
-          <div class="hbtns">
-            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-            <button class="tiny ghost" data-act="arch"></button>
-            <button class="tiny ghost" data-act="del">Удалить</button>
-          </div>
-        </div></details>
-      </div>
-
-      <div class="row" data-id="s3" data-state="debt" data-arch="0">
-        <div class="who">
-          <span class="name" contenteditable="plaintext-only">Дарья Ильина</span>
-          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-        </div>
-        <div class="bal"><span class="bal-n">0</span><span class="bal-m">0 ₽</span><span class="tag"></span></div>
-        <div class="acts">
-          <button class="tiny" data-act="lesson">Провёл</button>
-          <button class="tiny" data-act="cancel">Отмена</button>
-          <button class="tiny" data-act="pay">Оплата</button>
-          <button class="tiny ghost" data-act="copy">Текст</button>
-        </div>
-        <details class="hist"><summary>История</summary><div class="histbody">
-          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
-          <div class="hrows">
-            <div class="h" data-d="2026-08-20" data-t="init" data-delta="0" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">0</span></div>
-          </div>
-          <div class="hbtns">
-            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-            <button class="tiny ghost" data-act="arch"></button>
-            <button class="tiny ghost" data-act="del">Удалить</button>
-          </div>
-        </div></details>
-      </div>
-
-      <div class="row" data-id="s4" data-state="debt" data-arch="0">
-        <div class="who">
-          <span class="name" contenteditable="plaintext-only">Марк Соловьёв</span>
-          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">950</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-        </div>
-        <div class="bal"><span class="bal-n">0</span><span class="bal-m">0 ₽</span><span class="tag"></span></div>
-        <div class="acts">
-          <button class="tiny" data-act="lesson">Провёл</button>
-          <button class="tiny" data-act="cancel">Отмена</button>
-          <button class="tiny" data-act="pay">Оплата</button>
-          <button class="tiny ghost" data-act="copy">Текст</button>
-        </div>
-        <details class="hist"><summary>История</summary><div class="histbody">
-          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике">Демо-данные. Свои загрузите через настройки.</div>
-          <div class="hrows">
-            <div class="h" data-d="2026-08-20" data-t="init" data-delta="0" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">0</span></div>
-          </div>
-          <div class="hbtns">
-            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-            <button class="tiny ghost" data-act="arch"></button>
-            <button class="tiny ghost" data-act="del">Удалить</button>
-          </div>
-        </div></details>
-      </div>
-
-      <div class="row" data-id="s5" data-state="debt" data-arch="0">
-        <div class="who">
-          <span class="name" contenteditable="plaintext-only">Нина Захарова</span>
-          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-        </div>
-        <div class="bal"><span class="bal-n">−5</span><span class="bal-m">−10 000 ₽</span><span class="tag"></span></div>
-        <div class="acts">
-          <button class="tiny" data-act="lesson">Провёл</button>
-          <button class="tiny" data-act="cancel">Отмена</button>
-          <button class="tiny" data-act="pay">Оплата</button>
-          <button class="tiny ghost" data-act="copy">Текст</button>
-        </div>
-        <details class="hist"><summary>История</summary><div class="histbody">
-          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике">Демо-данные: пример отрицательного баланса.</div>
-          <div class="hrows">
-            <div class="h" data-d="2026-08-20" data-t="init" data-delta="-5" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">−5</span></div>
-          </div>
-          <div class="hbtns">
-            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-            <button class="tiny ghost" data-act="arch"></button>
-            <button class="tiny ghost" data-act="del">Удалить</button>
-          </div>
-        </div></details>
-      </div>
-
-    </div>
-    <p class="empty">Пока никого нет. Нажмите «+ Ученик» или загрузите файл в настройках.</p>
-  </section>
-
-  <details class="panel settings">
-    <summary>Настройки и резервная копия</summary>
-    <div class="sbody">
-      <div class="field">
-        <label for="thr">Напоминать, когда осталось уроков</label>
-        <input type="number" id="thr" value="2" min="0" max="20" step="1">
-      </div>
-      <div class="field">
-        <label>Текст, когда баланс заканчивается</label>
-        <div class="tpl" id="tplLow" contenteditable="plaintext-only">Привет, {имя}! У тебя осталось {остаток}. Скажи, какой пакет берём дальше: 4, 5 или 10?</div>
-      </div>
-      <div class="field">
-        <label>Текст, когда есть долг</label>
-        <div class="tpl" id="tplDebt" contenteditable="plaintext-only">Привет, {имя}! Оплаченные занятия закончились, сейчас за нами {долг}. Давай пополним баланс: 4, 5 или 10 занятий?</div>
-      </div>
-      <p class="hint">Подстановки: <b>{имя}</b>, <b>{остаток}</b> (например «2 занятия»), <b>{долг}</b> (например «3 занятия, 6 000 ₽»).</p>
-      <div class="field">
-        <label>Ставка по умолчанию для новых учеников, ₽</label>
-        <input type="number" id="defRate" value="2000" min="0" step="50">
-      </div>
-      <div class="hbtns">
-        <button data-act="export">Скачать резервную копию</button>
-        <button data-act="import">Загрузить из файла</button>
-        <button data-act="paste">Вставить JSON</button>
-        <button data-act="restore">Восстановить с этого устройства</button>
-        <button data-act="logout" hidden>Выйти</button>
-      </div>
-      <artifact-local><input type="file" id="importFile" accept="application/json,.json" hidden></artifact-local>
-      <p class="hint">Резервная копия сохраняется в браузере при каждом изменении. Кнопка «Скачать» отдаёт файл JSON.</p>
-    </div>
-  </details>
+  <div class="view" id="v-posts" role="tabpanel" aria-labelledby="tab-posts" hidden></div>
 
 </div>
 
-<template id="tpl-row">
-  <div class="row" data-id="" data-state="debt" data-arch="0">
-    <div class="who">
-      <span class="name" contenteditable="plaintext-only" data-ph="имя ученика"></span>
-      <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-    </div>
-    <div class="bal"><span class="bal-n">0</span><span class="bal-m">0 ₽</span><span class="tag"></span></div>
-    <div class="acts">
-      <button class="tiny" data-act="lesson">Провёл</button>
-      <button class="tiny" data-act="cancel">Отмена</button>
-      <button class="tiny" data-act="pay">Оплата</button>
-      <button class="tiny ghost" data-act="copy">Текст</button>
-    </div>
-    <details class="hist"><summary>История</summary><div class="histbody">
-      <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
-      <div class="hrows"></div>
-      <div class="hbtns">
-        <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-        <button class="tiny ghost" data-act="arch"></button>
-        <button class="tiny ghost" data-act="del">Удалить</button>
-      </div>
-    </div></details>
-  </div>
-</template>
+<div class="tip" id="tip" role="status" hidden></div>
 
-<template id="tpl-h">
-  <div class="h" data-d="" data-t="" data-delta="" data-amt="0"><span class="h-d"></span><span class="h-t"><span class="h-l"></span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n"></span></div>
-</template>
-
-<artifact-local>
 <div class="gate" id="gate" hidden>
   <form class="gatebox" id="gateForm">
     <h2>Уроки и оплаты</h2>
@@ -454,6 +480,7 @@ textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:v
     <p class="gateerr" id="gateErr" hidden></p>
   </form>
 </div>
+
 <dialog id="dlgPay">
   <div class="dhead"><h3>Оплата</h3><small id="payWho"></small></div>
   <div class="dbody">
@@ -478,7 +505,7 @@ textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:v
 <dialog id="dlgCancel">
   <div class="dhead"><h3>Занятие отменено</h3><small id="cxWho"></small></div>
   <div class="dbody">
-    <p class="hint" style="margin:0">Предупредил раньше чем за 6 часов, урок остаётся. Позже, урок сгорает.</p>
+    <p class="hint" id="cxInfo" style="margin:0">Предупредил раньше чем за 6 часов, урок остаётся. Позже, урок сгорает.</p>
     <div class="field"><label for="cxD">Дата</label><input type="date" id="cxD"></div>
   </div>
   <div class="dfoot"><button data-act="close">Назад</button><button data-act="cx-free">Не списывать</button><button class="primary" data-act="cx-charge">Списать урок</button></div>
@@ -497,550 +524,1740 @@ textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:v
   <div class="dhead"><h3>Отметить день</h3><small>ставьте отметки подряд, они сохраняются сразу</small></div>
   <div class="dbody">
     <div class="field"><label for="dayD">Дата</label><input type="date" id="dayD"></div>
+    <div id="dayCal"></div>
     <div class="daylist" id="dayList"></div>
   </div>
   <div class="dfoot"><button class="primary" data-act="close">Готово</button></div>
 </dialog>
-</artifact-local>
+
+<dialog id="dlgLink">
+  <div class="dhead"><h3>Чей это урок?</h3><small id="linkWho"></small></div>
+  <div class="dbody" id="linkBody"></div>
+  <div class="dfoot"><button data-act="close">Отмена</button><button class="primary" data-act="link-ok">Сохранить</button></div>
+</dialog>
+
+<dialog id="dlgImport" class="wide">
+  <div class="dhead"><h3>История из календаря</h3><small>балансы не меняются</small></div>
+  <div class="dbody scroll" id="impBody"></div>
+  <div class="dfoot"><button data-act="close">Закрыть</button><button class="primary" data-act="imp-ok" id="impOk" disabled>Загрузить в историю</button></div>
+</dialog>
 
 <script>
-(function(){
-"use strict";
-var MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
-var MONF=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
-function $(s,r){return (r||document).querySelector(s);}
-function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
-function num(t){if(t==null)return 0;var c=String(t).replace(/−/g,'-').replace(/[\s  ]/g,'').replace(',','.');var v=parseFloat(c);return isNaN(v)?0:v;}
-function fmt(n){n=Math.round(n);return (n<0?'−':'')+new Intl.NumberFormat('ru-RU').format(Math.abs(n));}
-function rub(n){return fmt(n)+' ₽';}
-function plural(n,f){var a=Math.abs(n)%100,b=a%10;if(a>10&&a<20)return f[2];if(b>1&&b<5)return f[1];if(b===1)return f[0];return f[2];}
-function lessonsTxt(n){return fmt(n)+' '+plural(n,['занятие','занятия','занятий']);}
-function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function dShort(s){var p=String(s||todayISO()).split('-');return String(+p[2])+' '+MON[(+p[1]-1)||0];}
+// Чистая логика учёта: без DOM и без сети. Работает и в браузере (window.UrokiLib),
+// и в Node (require), поэтому её можно проверять быстрыми юнит-тестами.
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.UrokiLib = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
 
-function thr(){return Math.max(0,Math.round(num($('#thr').value)));}
-function rateOf(row){var v=num($('.rate',row).textContent);return v>0?v:0;}
-function balOf(row){return Math.round(num($('.bal-n',row).textContent));}
-function stateFor(b){return b<=0?'debt':(b<=thr()?'low':'ok');}
-function paint(row,b){$('.bal-n',row).textContent=fmt(b);$('.bal-m',row).textContent=rub(b*rateOf(row));row.dataset.state=stateFor(b);}
-function firstName(row){var t=($('.name',row).textContent||'').trim();return t.split(/\s+/)[0]||t||'друг';}
+  // ---------- даты ----------
+  // Все даты в истории хранятся как 'YYYY-MM-DD' по часам устройства, как и раньше.
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function localDate(x) {
+    var d = x instanceof Date ? x : new Date(x);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  function utcOf(s) { var p = String(s).split('-'); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+  function dayDiff(a, b) { return Math.round((utcOf(b) - utcOf(a)) / 864e5); }
+  function addDays(s, n) {
+    var t = new Date(utcOf(s) + n * 864e5);
+    return t.getUTCFullYear() + '-' + pad(t.getUTCMonth() + 1) + '-' + pad(t.getUTCDate());
+  }
+  function ym(s) { return String(s || '').slice(0, 7); }
 
-function addH(row,o){
-  var el=$('#tpl-h').content.firstElementChild.cloneNode(true);
-  el.dataset.d=o.d; el.dataset.t=o.t; el.dataset.delta=String(o.delta); el.dataset.amt=String(o.amt||0);
-  $('.h-d',el).textContent=dShort(o.d);
-  $('.h-l',el).textContent=o.label;
-  $('.h-n',el).textContent=(o.t==='pay')?('+'+fmt(o.delta)+' · '+rub(o.amt)):(o.delta>0?'+'+fmt(o.delta):fmt(o.delta));
-  if(o.note)$('.h-note',el).textContent=o.note;
-  $('.hrows',row).appendChild(el);
-  return el;
-}
-var LABEL={lesson:'Занятие проведено','cancel-charged':'Отмена, урок списан','cancel-free':'Отмена, урок сохранён'};
-function doOp(row,kind,date){
-  var delta=(kind==='cancel-free')?0:-1;
-  addH(row,{d:date,t:kind,delta:delta,amt:0,label:LABEL[kind]});
-  paint(row,balOf(row)+delta);
-}
-function doPay(row,n,sum,date,comment){
-  addH(row,{d:date,t:'pay',delta:n,amt:sum,label:'Оплата'+(comment?', '+comment:'')});
-  paint(row,balOf(row)+n);
-}
-function doUndo(row){
-  var hs=$$('.h',row); if(!hs.length)return false;
-  var last=hs[hs.length-1], d=num(last.dataset.delta);
-  paint(row,balOf(row)-d); last.remove(); return true;
-}
+  // ---------- имена ----------
+  var TR = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k',
+    л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'ts',
+    ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya' };
+  function latin(s) {
+    return String(s || '').toLowerCase()
+      .replace(/[а-яё]/g, function (c) { return TR[c] != null ? TR[c] : c; })
+      .replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+  // Мягкое сравнение для разных транслитераций: Dmitrii / Dmitriy, Alyona / Alena.
+  function soft(t) { return t.replace(/kh/g, 'h').replace(/[aeiouy]+/g, 'a'); }
+  function tokens(s) { return latin(s).split(' ').filter(function (t) { return t.length >= 3; }); }
+  function sameName(a, b) {
+    var A = tokens(a), B = tokens(b);
+    if (!A.length || !B.length) return false;
+    var short = A.length <= B.length ? A : B, long = short === A ? B : A;
+    return short.every(function (t) {
+      return long.some(function (u) { return u === t || soft(u) === soft(t); });
+    });
+  }
+  function eventName(title) {
+    var m = String(title || '').match(/\(([^()]+)\)\s*$/);
+    return m ? m[1].replace(/\s+/g, ' ').trim() : '';
+  }
+  function cleanEmail(e) {
+    var v = String(e || '').trim().toLowerCase();
+    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) ? v : '';
+  }
+  function emailLocal(e) { return String(e || '').split('@')[0].replace(/[^a-z0-9]/g, ''); }
 
-var art=null;
-var artReady=(function(){
-  try{ if(window.claude&&window.claude.use) return window.claude.use('artifact').then(function(a){art=a;return a;},function(){return null;}); }catch(e){}
-  return Promise.resolve(null);
-})();
-var CHIP={
-  artifact:['сохраняется автоматически',0],
-  server:['сохранено на сервере',0],
-  saving:['сохраняю…',0],
-  checking:['проверяю хранилище…',0],
-  'server-error':['не сохранилось, проверьте сеть',1],
-  'artifact-error':['не сохранилось, скачайте копию',1],
-  locked:['нужен вход',1],
-  local:['только в этом браузере',1]
-};
-function setChip(mode){
-  var c=$('#chip'); if(!c)return;
-  var v=CHIP[mode]||CHIP.local;
-  c.textContent=v[0];
-  if(v[1])c.dataset.mode='local'; else c.removeAttribute('data-mode');
-}
-function commit(fn){
-  return artReady.then(function(a){
-    if(a&&typeof a.sync==='function'){
-      return a.sync(fn).then(function(){setChip('artifact');},function(e){console.warn('sync',e);setChip('artifact-error');});
+  // ---------- состояние ----------
+  var LESSONISH = { lesson: 1, 'cancel-charged': 1, 'cancel-free': 1 };
+  function isLessonish(t) { return !!LESSONISH[t]; }
+
+  // Терпимый разбор: полный снимок, голый массив, русские ключи, числа строками.
+  // Баланс ученика (bal) переносится как есть и никогда не пересчитывается.
+  function normalize(d, defaults) {
+    defaults = defaults || {};
+    if (typeof d === 'string') { try { d = JSON.parse(d); } catch (e) { return null; } }
+    if (Array.isArray(d)) d = { students: d };
+    if (!d || typeof d !== 'object') return null;
+    var list = d.students || d['ученики'] || d.items;
+    if (!Array.isArray(list)) return null;
+    var today = defaults.today || localDate(new Date());
+    var defRate = Number(d.defRate) || Number(defaults.defRate) || 2000;
+    var dismissed = {};
+    if (d.dismissed && typeof d.dismissed === 'object') {
+      Object.keys(d.dismissed).forEach(function (k) { if (d.dismissed[k]) dismissed[k] = 1; });
     }
-    fn();
-  }).then(after);
-}
-
-function snapshot(){
-  return {v:1,ts:Date.now(),thr:$('#thr').value,defRate:$('#defRate').value,
-    tplLow:$('#tplLow').textContent,tplDebt:$('#tplDebt').textContent,
-    students:$$('#rows .row').map(function(r){return{
-      id:r.dataset.id,arch:r.dataset.arch,name:$('.name',r).textContent,rate:rateOf(r),
-      contact:$('.contact',r).textContent,note:$('.snote',r).textContent,bal:balOf(r),
-      h:$$('.h',r).map(function(h){return{d:h.dataset.d,t:h.dataset.t,delta:num(h.dataset.delta),
-        amt:num(h.dataset.amt),label:$('.h-l',h).textContent,note:$('.h-note',h).textContent};})
-    };})};
-}
-function backup(){try{localStorage.setItem('uroki.backup',JSON.stringify(snapshot()));}catch(e){}}
-
-var mOff=0;
-function renderMonth(){
-  var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()+mOff);
-  var y=d.getFullYear(), m=d.getMonth();
-  var inc=0,les=0,cxC=0,cxF=0;
-  $$('#rows .h').forEach(function(h){
-    var p=String(h.dataset.d||'').split('-');
-    if(+p[0]!==y||(+p[1]-1)!==m)return;
-    var t=h.dataset.t;
-    if(t==='pay')inc+=num(h.dataset.amt);
-    else if(t==='lesson')les++;
-    else if(t==='cancel-charged')cxC++;
-    else if(t==='cancel-free')cxF++;
-  });
-  var title=MONF[m]+(y!==new Date().getFullYear()?(' '+y):'');
-  $('#month').innerHTML=
-    '<div class="month-nav"><button class="ghost tiny" data-act="m-prev" aria-label="Предыдущий месяц">‹</button>'+
-    '<b>'+title+'</b>'+
-    (mOff<0?'<button class="ghost tiny" data-act="m-next" aria-label="Следующий месяц">›</button>':'')+
-    '</div><div class="mstats">'+
-    '<span class="mstat"><i>получено</i><b>'+rub(inc)+'</b></span>'+
-    '<span class="mstat"><i>уроков</i><b>'+les+'</b></span>'+
-    '<span class="mstat"><i>отмен со списанием</i><b>'+cxC+'</b></span>'+
-    '<span class="mstat"><i>отмен без списания</i><b>'+cxF+'</b></span></div>';
-}
-
-function msgFor(row){
-  var b=balOf(row), nm=firstName(row);
-  if(b<=0){
-    var dbt=Math.abs(b);
-    return ($('#tplDebt').textContent||'')
-      .replace(/\{имя\}/g,nm)
-      .replace(/\{долг\}/g,dbt?(lessonsTxt(dbt)+', '+rub(dbt*rateOf(row))):'ноль занятий')
-      .replace(/\{остаток\}/g,lessonsTxt(b));
+    return {
+      v: 2,
+      ts: Number(d.ts) || Date.now(),
+      thr: d.thr != null ? String(d.thr) : String(defaults.thr != null ? defaults.thr : 2),
+      defRate: String(defRate),
+      tplLow: d.tplLow != null ? String(d.tplLow) : (defaults.tplLow || ''),
+      tplDebt: d.tplDebt != null ? String(d.tplDebt) : (defaults.tplDebt || ''),
+      calWords: d.calWords != null ? String(d.calWords) : (defaults.calWords || 'по английскому, Silver Fern'),
+      dismissed: dismissed,
+      ignore: uniq((Array.isArray(d.ignore) ? d.ignore : []).map(cleanEmail).filter(Boolean)),
+      students: list.map(function (x, i) {
+        x = x || {};
+        var bal = Number(x.bal != null ? x.bal : (x.balance != null ? x.balance : x['остаток']));
+        if (!isFinite(bal)) bal = 0;
+        var rate = Number(x.rate != null ? x.rate : x['ставка']) || defRate;
+        var h = Array.isArray(x.h) ? x.h : (Array.isArray(x.history) ? x.history : []);
+        // Пустую историю достраиваем только при импорте файла: у загруженного с сервера
+        // ученика без записей синтетическая строка не нужна.
+        if (!h.length && !x.since && defaults.fillInit) h = [{ d: today, t: 'init', delta: bal, amt: 0, label: 'Стартовый остаток', note: '' }];
+        var emails = (Array.isArray(x.emails) ? x.emails : String(x.emails || '').split(/[,;\s]+/))
+          .map(cleanEmail).filter(Boolean);
+        var st = {
+          id: String(x.id || ('s' + (i + 1) + '-' + Math.random().toString(36).slice(2, 6))),
+          arch: String(x.arch || '0') === '1' ? '1' : '0',
+          name: String(x.name || x['имя'] || 'Без имени'),
+          rate: rate,
+          contact: String(x.contact || x['контакт'] || ''),
+          note: String(x.note || ''),
+          bal: Math.round(bal),
+          emails: uniq(emails),
+          h: h.map(function (r) {
+            r = r || {};
+            var e = {
+              d: String(r.d || r.date || today), t: String(r.t || r.type || 'init'),
+              delta: Number(r.delta) || 0, amt: Number(r.amt || r.amount) || 0,
+              label: String(r.label || 'Запись'), note: String(r.note || '')
+            };
+            if (r.at) e.at = String(r.at);
+            if (r.ev) e.ev = String(r.ev);
+            if (r.src) e.src = String(r.src);
+            return e;
+          })
+        };
+        if (x.since) st.since = String(x.since);
+        return st;
+      })
+    };
   }
-  return ($('#tplLow').textContent||'').replace(/\{имя\}/g,nm)
-    .replace(/\{остаток\}/g,lessonsTxt(b))
-    .replace(/\{долг\}/g,lessonsTxt(0));
-}
-function renderDue(){
-  var t=thr();
-  var list=$$('#rows .row').filter(function(r){return r.dataset.arch!=='1'&&balOf(r)<=t;});
-  var box=$('#due');
-  if(!list.length){box.hidden=true;box.innerHTML='';return;}
-  box.hidden=false;
-  box.innerHTML='<h2>Пора напомнить об оплате</h2><ul>'+list.map(function(r){
-    var b=balOf(r);
-    var st=b<0?('долг '+lessonsTxt(Math.abs(b))+', '+rub(Math.abs(b)*rateOf(r))):(b===0?'занятия закончились':('осталось '+lessonsTxt(b)));
-    var c=($('.contact',r).textContent||'').trim();
-    return '<li><b>'+esc($('.name',r).textContent)+'</b><em>'+st+(c?(' · '+esc(c)):'')+'</em>'+
-      '<button class="tiny" data-act="copy-due" data-sid="'+esc(r.dataset.id)+'">Скопировать текст</button></li>';
-  }).join('')+'</ul>';
-}
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function uniq(a) { var o = []; a.forEach(function (x) { if (o.indexOf(x) < 0) o.push(x); }); return o; }
 
-function toast(msg){
-  var old=document.getElementById('toast'); if(old)old.remove();
-  var t=document.createElement('div'); t.className='toast'; t.id='toast'; t.textContent=msg;
-  document.body.appendChild(t); setTimeout(function(){if(t.parentNode)t.remove();},2400);
-}
-function copyText(s,okMsg){
-  function fallback(){
-    var ta=document.createElement('textarea'); ta.value=s; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select();
-    try{document.execCommand('copy');toast(okMsg);}catch(e){toast('Не удалось скопировать');}
-    ta.remove();
+  // С какой даты учёт ведётся по-настоящему: всё раньше считается историей,
+  // которая на баланс не влияет. Импортированные из календаря записи не в счёт.
+  function studentStart(st, today) {
+    if (st.since) return st.since;
+    var min = null;
+    st.h.forEach(function (e) { if (e.src !== 'cal' && (!min || e.d < min)) min = e.d; });
+    return min || today;
   }
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(s).then(function(){toast(okMsg);},fallback);
-  } else fallback();
-}
-var armedKey=null,armedT=null;
-function needSecond(key,msg){
-  if(armedKey===key){clearTimeout(armedT);armedKey=null;return true;}
-  armedKey=key;toast(msg);clearTimeout(armedT);armedT=setTimeout(function(){armedKey=null;},4500);
-  return false;
-}
-// Хранилище выбирается при загрузке: 'artifact' - рантайм claude.ai,
-// 'server' - функция /api/state поверх Redis, 'local' - только localStorage.
-var MODE='local', saveTimer=null, saving=false, dirty=false;
-function pushState(){
-  if(MODE!=='server')return;
-  dirty=true; clearTimeout(saveTimer); saveTimer=setTimeout(flush,700);
-}
-function flush(){
-  if(MODE!=='server'||saving||!dirty)return;
-  saving=true; dirty=false; setChip('saving');
-  fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(snapshot())})
-    .then(function(r){
-      if(r.status===401){var e=new Error('auth');e.auth=1;throw e;}
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      return r.json();
-    })
-    .then(function(){saving=false;setChip('server');if(dirty)flush();})
-    .catch(function(e){
-      saving=false; dirty=true;
-      if(e&&e.auth){setChip('locked');showGate('Сессия истекла, войдите снова');return;}
-      setChip('server-error'); console.warn('save',e);
+
+  // ---------- события календаря ----------
+  // Событие из Apps Script: {key, title, start, end, emails}.
+  function eventsFor(st, events) {
+    if (!st.emails || !st.emails.length) return [];
+    return events.filter(function (ev) {
+      return (ev.emails || []).some(function (e) { return st.emails.indexOf(e) > -1; });
     });
-}
-function after(){renderMonth();renderDue();backup();pushState();}
-
-var curRow=null;
-function openPay(row){
-  curRow=row;
-  $('#payWho').textContent=($('.name',row).textContent||'')+' · '+rateOf(row)+' ₽ за урок';
-  $('#payD').value=todayISO(); $('#payN').value=5; $('#payS').value=Math.round(5*rateOf(row)); $('#payC').value='';
-  $$('#packs button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.n==='5'?'true':'false');});
-  $('#dlgPay').showModal();
-}
-function syncPaySum(){ if(curRow) $('#payS').value=Math.round(num($('#payN').value)*rateOf(curRow)); }
-function openCancel(row){
-  curRow=row; $('#cxWho').textContent=$('.name',row).textContent||'';
-  $('#cxD').value=todayISO(); $('#dlgCancel').showModal();
-}
-function renderDay(){
-  var host=$('#dayList');
-  host.innerHTML=$$('#rows .row').filter(function(r){return r.dataset.arch!=='1';}).map(function(r){
-    return '<div class="dayrow" data-sid="'+esc(r.dataset.id)+'"><span class="dn">'+esc($('.name',r).textContent)+'</span>'+
-      '<span class="db">'+fmt(balOf(r))+'</span>'+
-      '<button class="tiny" data-act="d-lesson">Провёл</button>'+
-      '<button class="tiny" data-act="d-charge">Отмена, списать</button>'+
-      '<button class="tiny" data-act="d-free">Отмена, оставить</button>'+
-      '<span class="done"></span></div>';
-  }).join('');
-}
-function openDay(){ $('#dayD').value=todayISO(); renderDay(); $('#dlgDay').showModal(); }
-
-function addStudent(){
-  commit(function(){
-    var el=$('#tpl-row').content.firstElementChild.cloneNode(true);
-    el.dataset.id='s'+Date.now().toString(36);
-    $('.rate',el).textContent=String(Math.round(num($('#defRate').value))||2000);
-    $('#rows').appendChild(el);
-    paint(el,0);
-  }).then(function(){
-    var last=$$('#rows .row').pop(); if(last){var n=$('.name',last); n.focus(); last.scrollIntoView({block:'center'});}
-  });
-}
-function restore(){
-  var raw=null; try{raw=localStorage.getItem('uroki.backup');}catch(e){}
-  if(!raw){toast('Копии на этом устройстве нет');return;}
-  if(!needSecond('restore','Это заменит текущие данные. Нажмите ещё раз'))return;
-  var d; try{d=JSON.parse(raw);}catch(e){toast('Копия повреждена');return;}
-  commit(function(){
-    if(d.thr)$('#thr').value=d.thr;
-    if(d.defRate)$('#defRate').value=d.defRate;
-    if(d.tplLow)$('#tplLow').textContent=d.tplLow;
-    if(d.tplDebt)$('#tplDebt').textContent=d.tplDebt;
-    var host=$('#rows'); host.innerHTML='';
-    (d.students||[]).forEach(function(s){
-      var el=$('#tpl-row').content.firstElementChild.cloneNode(true);
-      el.dataset.id=s.id||('s'+Math.random().toString(36).slice(2));
-      el.dataset.arch=s.arch||'0';
-      $('.name',el).textContent=s.name||'';
-      $('.rate',el).textContent=String(s.rate||2000);
-      $('.contact',el).textContent=s.contact||'';
-      $('.snote',el).textContent=s.note||'';
-      (s.h||[]).forEach(function(h){addH(el,{d:h.d,t:h.t,delta:h.delta,amt:h.amt,label:h.label,note:h.note});});
-      host.appendChild(el);
-      paint(el,s.bal||0);
-    });
-    toast('Данные восстановлены');
-  });
-}
-function exportBackup(){
-  var data=JSON.stringify(snapshot(),null,2), name='uroki-'+todayISO()+'.json';
-  var p=null; try{ if(window.claude&&window.claude.use) p=window.claude.use('downloads'); }catch(e){}
-  Promise.resolve(p).then(function(dl){
-    if(dl&&dl.save) return dl.save({filename:name,data:data}).then(function(){toast('Копия сохранена');});
-    throw 0;
-  }).catch(function(){ copyText(data,'Копия скопирована в буфер обмена'); });
-}
-
-function onClick(e){
-  var b=e.target.closest?e.target.closest('button[data-act]'):null;
-  if(!b)return;
-  var act=b.dataset.act, row=b.closest('.row');
-  if(act==='m-prev'){mOff--;renderMonth();return;}
-  if(act==='m-next'){if(mOff<0){mOff++;renderMonth();}return;}
-  if(act==='add'){addStudent();return;}
-  if(act==='day'){openDay();return;}
-  if(act==='export'){exportBackup();return;}
-  if(act==='restore'){restore();return;}
-  if(act==='import'){var fi=$('#importFile'); if(fi)fi.click(); return;}
-  if(act==='paste'){
-    var box=$('#pasteBox'), pe=$('#pasteErr');
-    if(box)box.value=''; if(pe)pe.hidden=true;
-    $('#dlgPaste').showModal(); if(box)setTimeout(function(){box.focus();},50);
-    return;
   }
-  if(act==='paste-ok'){
-    var box2=$('#pasteBox'), pe2=$('#pasteErr');
-    var n=loadSnapshot(box2?box2.value:'');
-    if(!n){
-      if(pe2){pe2.textContent='Не получилось разобрать. Нужен объект со списком students или просто массив учеников.';pe2.hidden=false;}
+  function studentsFor(ev, students) {
+    return students.filter(function (st) {
+      return (st.emails || []).some(function (e) { return (ev.emails || []).indexOf(e) > -1; });
+    });
+  }
+
+  // Сопоставляет события ученика с его записями.
+  //   paired    событие уже отмечено (по ключу события или по близкой дате)
+  //   before    событие раньше начала учёта: кандидат в историю
+  //   unmarked  прошло, но не отмечено
+  //   future    ещё не наступило
+  // Нечёткое совпадение по дате (±tol дней) только для прошедших событий: так
+  // старые отметки без ключа события находят свои уроки, а будущий урок не
+  // «съедает» сегодняшнюю отметку.
+  function pairEvents(st, events, opts) {
+    opts = opts || {};
+    var now = opts.now != null ? opts.now : Date.now();
+    var today = opts.today || localDate(new Date(now));
+    var tol = opts.tolerance != null ? opts.tolerance : 2;
+    var dismissed = opts.dismissed || {};
+    var start = studentStart(st, today);
+    var used = {};
+    var byEv = {};
+    st.h.forEach(function (e, i) { if (e.ev && byEv[e.ev] == null) byEv[e.ev] = i; });
+    var res = { paired: [], before: [], unmarked: [], future: [], start: start };
+    var pending = [];
+    events.slice().sort(byStart).forEach(function (ev) {
+      var i = byEv[ev.key];
+      if (i != null && !used[i]) { used[i] = 1; res.paired.push({ ev: ev, idx: i }); return; }
+      if (dismissed[ev.key + '|' + st.id]) { res.paired.push({ ev: ev, idx: -1, dismissed: true }); return; }
+      pending.push(ev);
+    });
+    pending.forEach(function (ev) {
+      var d = localDate(ev.start);
+      var past = new Date(ev.start).getTime() <= now;
+      if (d < start) { res.before.push(ev); return; }
+      if (past) {
+        var best = -1, bestDiff = tol + 1;
+        st.h.forEach(function (e, i) {
+          if (used[i] || e.ev || !isLessonish(e.t) || e.src === 'cal') return;
+          var diff = Math.abs(dayDiff(e.d, d));
+          if (diff < bestDiff) { best = i; bestDiff = diff; }
+        });
+        if (best > -1) { used[best] = 1; res.paired.push({ ev: ev, idx: best, fuzzy: true }); return; }
+        res.unmarked.push(ev);
+      } else {
+        res.future.push(ev);
+      }
+    });
+    return res;
+  }
+  function byStart(a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : 0; }
+
+  // ---------- люди из календаря ----------
+  // Склеивает адреса и имена в людей: один адрес с двумя написаниями имени и одно
+  // имя с опечаткой в адресе становятся одним человеком.
+  function groupPeople(events) {
+    var parent = {};
+    function find(x) { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; }
+    function add(x) { if (parent[x] == null) parent[x] = x; }
+    function union(a, b) { add(a); add(b); var ra = find(a), rb = find(b); if (ra !== rb) parent[rb] = ra; }
+    function nkey(nm) { return 'n:' + soft(latin(nm).replace(/ /g, '')); }
+    var evs = events.slice().sort(byStart).map(function (ev) {
+      return { ev: ev, nm: eventName(ev.title), emails: uniq((ev.emails || []).map(cleanEmail).filter(Boolean)) };
+    });
+    evs.forEach(function (x) {
+      x.emails.forEach(function (e) { add('e:' + e); });
+      // Имя в скобках принадлежит записавшемуся, только если адрес у события один.
+      if (x.nm) { add(nkey(x.nm)); if (x.emails.length === 1) union(nkey(x.nm), 'e:' + x.emails[0]); }
+    });
+    var groups = {};
+    evs.forEach(function (x) {
+      var keys = x.emails.length ? x.emails.map(function (e) { return 'e:' + e; }) : (x.nm ? [nkey(x.nm)] : []);
+      uniq(keys.map(find)).forEach(function (r) {
+        var g = groups[r] || (groups[r] = { id: r, emails: [], names: [], titles: [], keys: [], first: x.ev.start, last: x.ev.start });
+        if (g.keys.indexOf(x.ev.key) < 0) g.keys.push(x.ev.key);
+        if (x.ev.start < g.first) g.first = x.ev.start;
+        if (x.ev.start > g.last) g.last = x.ev.start;
+        if (x.nm && x.emails.length <= 1) {
+          if (!g.names.some(function (n) { return n.toLowerCase() === x.nm.toLowerCase(); })) g.names.push(x.nm);
+        } else if (!x.nm) {
+          var t = String(x.ev.title || '');
+          if (t && g.titles.indexOf(t) < 0) g.titles.push(t);
+        }
+      });
+    });
+    Object.keys(parent).forEach(function (k) {
+      if (k.indexOf('e:') !== 0) return;
+      var g = groups[find(k)];
+      if (g && g.emails.indexOf(k.slice(2)) < 0) g.emails.push(k.slice(2));
+    });
+    return Object.keys(groups).map(function (r) {
+      var g = groups[r];
+      g.count = g.keys.length;
+      g.label = g.names[0] || g.emails[0] || r;
+      return g;
+    }).sort(function (a, b) { return b.count - a.count || (a.label < b.label ? -1 : 1); });
+  }
+
+  // Кому из учеников скорее всего принадлежит человек из календаря.
+  function suggest(person, students) {
+    var i, st;
+    for (i = 0; i < students.length; i++) {
+      st = students[i];
+      if ((st.emails || []).some(function (e) { return person.emails.indexOf(e) > -1; })) return st.id;
+    }
+    for (i = 0; i < students.length; i++) {
+      st = students[i];
+      if (person.names.some(function (n) { return sameName(n, st.name); })) return st.id;
+    }
+    // Адрес вида svetlanakostryukova@ или danilinaalyona@: ищем фамилию внутри.
+    for (i = 0; i < students.length; i++) {
+      st = students[i];
+      var tk = tokens(st.name).filter(function (t) { return t.length >= 5; });
+      if (!tk.length) continue;
+      var hit = person.emails.some(function (e) {
+        var loc = emailLocal(e);
+        return tk.some(function (t) { return loc.indexOf(t) > -1; });
+      });
+      if (hit) return st.id;
+    }
+    return null;
+  }
+
+  // ---------- импорт истории ----------
+  // mapping: personId -> {sid} | {create: {name, rate, arch}} | {skip: true}
+  // excluded: {eventKey: true} — события, которые человек снял галочкой.
+  // Возвращает план, ничего не меняя. Балансы план не трогает по построению:
+  // новые записи идут с delta 0, существующим только дописываются at и ev.
+  function planImport(state, events, people, mapping, opts) {
+    opts = opts || {};
+    var excluded = opts.excluded || {};
+    var today = opts.today || localDate(new Date(opts.now || Date.now()));
+    var targets = {};
+    var order = [];
+    people.forEach(function (p) {
+      var m = mapping[p.id];
+      if (!m || m.skip) return;
+      var tkey = m.sid ? m.sid : ('new:' + p.id);
+      var t = targets[tkey];
+      if (!t) {
+        var base = m.sid ? findStudent(state, m.sid) : null;
+        if (m.sid && !base) return;
+        t = targets[tkey] = {
+          key: tkey, sid: m.sid || null, isNew: !m.sid,
+          name: base ? base.name : String((m.create && m.create.name) || p.label),
+          rate: base ? base.rate : (Number(m.create && m.create.rate) || Number(state.defRate) || 2000),
+          arch: base ? base.arch : ((m.create && m.create.arch) ? '1' : '0'),
+          emails: base ? (base.emails || []).slice() : [],
+          keys: []
+        };
+        order.push(tkey);
+      }
+      p.emails.forEach(function (e) { if (t.emails.indexOf(e) < 0) t.emails.push(e); });
+      p.keys.forEach(function (k) { if (t.keys.indexOf(k) < 0) t.keys.push(k); });
+    });
+    var evByKey = {};
+    events.forEach(function (ev) { evByKey[ev.key] = ev; });
+    var plan = { students: [], add: 0, link: 0, unmarked: 0, today: today };
+    order.forEach(function (tkey) {
+      var t = targets[tkey];
+      var base = t.sid ? findStudent(state, t.sid) : { id: 'new', h: [], since: today, emails: t.emails };
+      var probe = { id: base.id, h: base.h, since: base.since, emails: t.emails };
+      var evs = t.keys.map(function (k) { return evByKey[k]; }).filter(function (ev) { return ev && !excluded[ev.key]; });
+      var r = pairEvents(probe, evs, { now: opts.now, today: today, tolerance: opts.tolerance, dismissed: state.dismissed });
+      var adds = r.before.map(function (ev) {
+        return { d: localDate(ev.start), t: 'lesson', delta: 0, amt: 0, label: 'Урок по календарю', note: '', at: ev.start, ev: ev.key, src: 'cal' };
+      });
+      var links = r.paired.filter(function (p) { return p.fuzzy; }).map(function (p) {
+        return { idx: p.idx, at: p.ev.start, ev: p.ev.key };
+      });
+      plan.students.push({
+        key: tkey, sid: t.sid, isNew: t.isNew, name: t.name, rate: t.rate, arch: t.arch,
+        emails: t.emails, start: r.start, add: adds, link: links,
+        already: r.paired.length - links.length, unmarked: r.unmarked.length, future: r.future.length
+      });
+      plan.add += adds.length;
+      plan.link += links.length;
+      plan.unmarked += r.unmarked.length;
+    });
+    return plan;
+  }
+
+  // Применяет план к копии состояния. Порядок записей «по операциям» сохраняется:
+  // история из календаря встаёт перед ними, отсортированная по дате, поэтому
+  // «Отменить последнюю запись» по-прежнему отменяет последнее действие.
+  function applyImport(state, plan, newId) {
+    var s = JSON.parse(JSON.stringify(state));
+    var made = 0;
+    plan.students.forEach(function (ps) {
+      var st;
+      if (ps.isNew) {
+        st = {
+          id: newId ? newId(made++) : ('s' + Date.now().toString(36) + made++),
+          arch: ps.arch === '1' ? '1' : '0', name: ps.name, rate: ps.rate, contact: '', note: '',
+          bal: 0, emails: ps.emails.slice(), since: plan.today, h: []
+        };
+        s.students.push(st);
+      } else {
+        st = findStudent(s, ps.sid);
+        if (!st) return;
+        st.emails = uniq((st.emails || []).concat(ps.emails));
+      }
+      ps.link.forEach(function (l) {
+        var e = st.h[l.idx];
+        if (e && !e.ev) { e.at = l.at; e.ev = l.ev; }
+      });
+      if (ps.add.length) {
+        var have = {};
+        st.h.forEach(function (e) { if (e.ev) have[e.ev] = 1; });
+        var fresh = ps.add.filter(function (e) { return !have[e.ev]; });
+        var cal = st.h.filter(function (e) { return e.src === 'cal'; }).concat(fresh);
+        cal.sort(function (a, b) { return (a.at || a.d) < (b.at || b.d) ? -1 : 1; });
+        st.h = cal.concat(st.h.filter(function (e) { return e.src !== 'cal'; }));
+      }
+    });
+    return s;
+  }
+  function findStudent(state, id) {
+    for (var i = 0; i < state.students.length; i++) if (state.students[i].id === id) return state.students[i];
+    return null;
+  }
+
+  // ---------- конспекты ----------
+  // Заметка: {id, start, date, title, emails, student, summary, url}.
+  function notesFor(st, notes) {
+    var em = st.emails || [];
+    return notes.filter(function (n) {
+      if ((n.emails || []).length) return n.emails.some(function (e) { return em.indexOf(e) > -1; });
+      return n.student ? sameName(n.student, st.name) : false;
+    }).sort(function (a, b) { return (a.start || a.date) < (b.start || b.date) ? 1 : -1; });
+  }
+  function noteDate(n) { return n.start ? localDate(n.start) : n.date; }
+  function noteForEntry(entry, stNotes) {
+    if (!isLessonish(entry.t)) return null;
+    var best = null, bestGap = Infinity;
+    stNotes.forEach(function (n) {
+      if (entry.at && n.start) {
+        var gap = Math.abs(new Date(n.start) - new Date(entry.at));
+        if (gap <= 3 * 3600e3 && gap < bestGap) { best = n; bestGap = gap; }
+      } else if (noteDate(n) === entry.d && bestGap === Infinity) {
+        best = n; bestGap = 1e12;
+      }
+    });
+    return best;
+  }
+
+  // ---------- деньги и уроки по месяцам ----------
+  // Проведено на сумму = (уроки + отмены со списанием) × текущая ставка ученика.
+  function monthSeries(state, fromYm, toYm) {
+    var out = [], map = {};
+    var cur = fromYm;
+    var guard = 0;
+    while (cur <= toYm && guard++ < 240) {
+      var row = { ym: cur, lessons: 0, charged: 0, free: 0, earned: 0, paid: 0 };
+      out.push(row); map[cur] = row;
+      var y = +cur.slice(0, 4), m = +cur.slice(5, 7);
+      m++; if (m > 12) { m = 1; y++; }
+      cur = y + '-' + pad(m);
+    }
+    state.students.forEach(function (st) {
+      st.h.forEach(function (e) {
+        var r = map[ym(e.d)];
+        if (!r) return;
+        if (e.t === 'lesson') { r.lessons++; r.earned += st.rate; }
+        else if (e.t === 'cancel-charged') { r.charged++; r.earned += st.rate; }
+        else if (e.t === 'cancel-free') r.free++;
+        else if (e.t === 'pay') r.paid += e.amt;
+      });
+    });
+    return out;
+  }
+  function firstYm(state) {
+    var min = null;
+    state.students.forEach(function (st) { st.h.forEach(function (e) { if (!min || e.d < min) min = e.d; }); });
+    return min ? ym(min) : null;
+  }
+
+  // ---------- маленький безопасный Markdown для конспектов ----------
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function inline(s) {
+    var t = esc(s);
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+    t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, function (_, a, u) {
+      return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + a + '</a>';
+    });
+    return t;
+  }
+  function md(text) {
+    var lines = String(text || '').replace(/\r/g, '').split('\n');
+    var html = '', depth = 0, para = [];
+    function flushPara() { if (para.length) { html += '<p>' + inline(para.join(' ')) + '</p>'; para = []; } }
+    function setDepth(n) {
+      while (depth < n) { html += '<ul>'; depth++; }
+      while (depth > n) { html += '</ul>'; depth--; }
+    }
+    lines.forEach(function (raw) {
+      var line = raw.replace(/\s+$/, '');
+      var m;
+      if (!line.trim()) { flushPara(); return; }
+      if ((m = line.match(/^(#{1,4})\s+(.*)$/))) {
+        flushPara(); setDepth(0);
+        html += '<h4>' + inline(m[2]) + '</h4>';
+        return;
+      }
+      if ((m = line.match(/^(\s*)[-*]\s+(.*)$/))) {
+        flushPara();
+        var lvl = Math.min(3, Math.floor(m[1].replace(/\t/g, '  ').length / 2) + 1);
+        setDepth(lvl);
+        html += '<li>' + inline(m[2]) + '</li>';
+        return;
+      }
+      if (depth && /^\s{2,}\S/.test(line)) { html += '<li class="cont">' + inline(line.trim()) + '</li>'; return; }
+      setDepth(0);
+      para.push(line.trim());
+    });
+    flushPara(); setDepth(0);
+    return html;
+  }
+
+  return {
+    pad: pad, localDate: localDate, dayDiff: dayDiff, addDays: addDays, ym: ym,
+    latin: latin, sameName: sameName, eventName: eventName, cleanEmail: cleanEmail,
+    isLessonish: isLessonish, normalize: normalize, studentStart: studentStart,
+    eventsFor: eventsFor, studentsFor: studentsFor, pairEvents: pairEvents,
+    groupPeople: groupPeople, suggest: suggest, planImport: planImport, applyImport: applyImport,
+    findStudent: findStudent, notesFor: notesFor, noteForEntry: noteForEntry, noteDate: noteDate,
+    monthSeries: monthSeries, firstYm: firstYm, esc: esc, md: md
+  };
+});
+
+</script>
+<script>
+// Уроки и оплаты: интерфейс. Состояние живёт в объекте S и целиком уходит
+// на сервер снимком того же формата, что и раньше (students[].bal, h[]).
+// Логика расчётов и сопоставления с календарём лежит в lib.js.
+(function () {
+  'use strict';
+  var L = window.UrokiLib;
+
+  // ---------- форматирование ----------
+  var MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  var MONS = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  var MONF = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
+  var MONP = ['январе', 'феврале', 'марте', 'апреле', 'мае', 'июне', 'июле', 'августе', 'сентябре', 'октябре', 'ноябре', 'декабре'];
+  var WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function num(t) {
+    if (t == null) return 0;
+    var c = String(t).replace(/−/g, '-').replace(/[\s  ]/g, '').replace(',', '.');
+    var v = parseFloat(c);
+    return isNaN(v) ? 0 : v;
+  }
+  function fmt(n) { n = Math.round(n); return (n < 0 ? '−' : '') + new Intl.NumberFormat('ru-RU').format(Math.abs(n)); }
+  function rub(n) { return fmt(n) + ' ₽'; }
+  function plural(n, f) { var a = Math.abs(n) % 100, b = a % 10; if (a > 10 && a < 20) return f[2]; if (b > 1 && b < 5) return f[1]; if (b === 1) return f[0]; return f[2]; }
+  function lessonsTxt(n) { return fmt(n) + ' ' + plural(n, ['занятие', 'занятия', 'занятий']); }
+  function urokTxt(n) { return fmt(n) + ' ' + plural(n, ['урок', 'урока', 'уроков']); }
+  function todayISO() { return L.localDate(new Date()); }
+  function dShort(s) {
+    var p = String(s || todayISO()).split('-');
+    var y = +p[0], cy = new Date().getFullYear();
+    return String(+p[2]) + ' ' + MON[(+p[1] - 1) || 0] + (y && y !== cy ? ' ' + String(y).slice(2) : '');
+  }
+  function hhmm(iso) { var d = new Date(iso); return L.pad(d.getHours()) + ':' + L.pad(d.getMinutes()); }
+  function dayLabel(ds) {
+    var t = todayISO();
+    if (ds === t) return 'сегодня';
+    if (ds === L.addDays(t, 1)) return 'завтра';
+    if (ds === L.addDays(t, -1)) return 'вчера';
+    var p = ds.split('-');
+    var wd = WD[new Date(+p[0], +p[1] - 1, +p[2]).getDay()];
+    return wd + ', ' + dShort(ds);
+  }
+  function when(iso) { return dayLabel(L.localDate(iso)) + ', ' + hhmm(iso); }
+  function cap(s) { s = String(s || ''); return s.charAt(0).toUpperCase() + s.slice(1); }
+  function compact(v) {
+    var a = Math.abs(v);
+    if (a >= 1e6) return (Math.round(v / 1e5) / 10).toString().replace('.', ',') + ' млн';
+    if (a >= 1000) return (Math.round(v / 100) / 10).toString().replace('.', ',') + ' тыс';
+    return String(Math.round(v));
+  }
+  var esc = L.esc;
+  function attr(s) { return esc(s); }
+  function startOfDayIso(ds) { var p = ds.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]).toISOString(); }
+
+  // ---------- состояние ----------
+  var TPL_LOW = 'Привет, {имя}! У тебя осталось {остаток}. Скажи, какой пакет берём дальше: 4, 5 или 10?';
+  var TPL_DEBT = 'Привет, {имя}! Оплаченные занятия закончились, сейчас за нами {долг}. Давай пополним баланс: 4, 5 или 10 занятий?';
+  var DEFAULTS = { thr: 2, defRate: 2000, tplLow: TPL_LOW, tplDebt: TPL_DEBT, calWords: 'по английскому, Silver Fern' };
+  function norm(d, fillInit) {
+    var o = {};
+    Object.keys(DEFAULTS).forEach(function (k) { o[k] = DEFAULTS[k]; });
+    o.today = todayISO();
+    o.fillInit = !!fillInit;
+    return L.normalize(d, o);
+  }
+  // Демо-ученики вымышленные: страница должна что-то показывать при первом открытии.
+  function demo() {
+    var mk = function (id, name, rate, bal, note) {
+      return { id: id, arch: '0', name: name, rate: rate, contact: '', note: note || '', bal: bal,
+        h: [{ d: '2026-08-20', t: 'init', delta: bal, amt: 0, label: 'Стартовый остаток', note: '' }] };
+    };
+    return norm({ v: 1, thr: '2', defRate: '2000', tplLow: TPL_LOW, tplDebt: TPL_DEBT, students: [
+      mk('s1', 'Анна Петрова', 2000, 6), mk('s2', 'Борис Ковалёв', 2000, 4), mk('s3', 'Дарья Ильина', 2000, 0),
+      mk('s4', 'Марк Соловьёв', 950, 0, 'Демо-данные. Свои загрузите через настройки.'),
+      mk('s5', 'Нина Захарова', 2000, -5, 'Демо-данные: пример отрицательного баланса.')
+    ] });
+  }
+  var S = demo();
+
+  function snapshot() { var s = JSON.parse(JSON.stringify(S)); s.ts = Date.now(); return s; }
+  function stById(id) { return L.findStudent(S, id); }
+  function thr() { return Math.max(0, Math.round(num(S.thr))); }
+  function stateFor(b) { return b <= 0 ? 'debt' : (b <= thr() ? 'low' : 'ok'); }
+  function firstName(st) { var t = (st.name || '').trim(); return t.split(/\s+/)[0] || t || 'друг'; }
+  function newId() { return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+
+  var LABEL = { lesson: 'Занятие проведено', 'cancel-charged': 'Отмена, урок списан', 'cancel-free': 'Отмена, урок сохранён' };
+  function doOp(st, kind, date, ev) {
+    var delta = kind === 'cancel-free' ? 0 : -1;
+    var e = { d: date, t: kind, delta: delta, amt: 0, label: LABEL[kind], note: '' };
+    if (ev) { e.at = ev.start; e.ev = ev.key; }
+    st.h.push(e);
+    st.bal += delta;
+  }
+  function doPay(st, n, sum, date, comment) {
+    st.h.push({ d: date, t: 'pay', delta: n, amt: sum, label: 'Оплата' + (comment ? ', ' + comment : ''), note: '' });
+    st.bal += n;
+  }
+  function doUndo(st) {
+    if (!st.h.length) return false;
+    var e = st.h.pop();
+    st.bal -= e.delta;
+    return true;
+  }
+
+  // ---------- хранение ----------
+  // 'server' - /api/state поверх Redis, 'local' - только localStorage этого браузера.
+  var MODE = 'local', saveTimer = null, saving = false, dirty = false, daysTimer = null;
+  var CHIP = {
+    server: ['сохранено на сервере', 0],
+    saving: ['сохраняю…', 0],
+    checking: ['проверяю хранилище…', 0],
+    'server-error': ['не сохранилось, проверьте сеть', 1],
+    locked: ['нужен вход', 1],
+    local: ['только в этом браузере', 1]
+  };
+  function setChip(mode) {
+    var c = $('#chip'); if (!c) return;
+    var v = CHIP[mode] || CHIP.local;
+    c.textContent = v[0];
+    if (v[1]) c.dataset.mode = 'local'; else c.removeAttribute('data-mode');
+  }
+  function backupLocal() { try { localStorage.setItem('uroki.backup', JSON.stringify(snapshot())); } catch (e) { /* приватный режим */ } }
+  function pushState() {
+    if (MODE !== 'server') return;
+    dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700);
+  }
+  function flush() {
+    if (MODE !== 'server' || saving || !dirty) return;
+    saving = true; dirty = false; setChip('saving');
+    fetch('/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(snapshot()) })
+      .then(function (r) {
+        if (r.status === 401) { var e = new Error('auth'); e.auth = 1; throw e; }
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function () {
+        saving = false; setChip('server');
+        if (dirty) flush();
+        else if ($('#settings') && $('#settings').open) { clearTimeout(daysTimer); daysTimer = setTimeout(loadDays, 400); }
+      })
+      .catch(function (e) {
+        saving = false; dirty = true;
+        if (e && e.auth) { setChip('locked'); showGate('Сессия истекла, войдите снова'); return; }
+        setChip('server-error'); console.warn('save', e);
+      });
+  }
+  function commit(fn) { fn(); after(); return Promise.resolve(); }
+  function after() { renderAll(); backupLocal(); pushState(); }
+
+  // ---------- Google: календарь, конспекты, посты ----------
+  var G = { state: 'unknown', err: '', me: '', events: [], notes: [], at: 0, posts: null, postsState: '', postsErr: '', drive: null };
+  var GERR = {
+    'google-forbidden': 'Apps Script отклонил токен. Проверьте GOOGLE_SCRIPT_TOKEN на Vercel.',
+    'google-token-not-set': 'В Apps Script не задан токен: запустите там функцию setup().',
+    'google-bad-response': 'Apps Script ответил не данными. Проверьте, что у веб-приложения доступ «Все».',
+    'google-timeout': 'Google отвечал слишком долго. Нажмите «Обновить».',
+    'google-unreachable': 'Google не ответил. Проверьте сеть и нажмите «Обновить».',
+    'password-required': 'Без пароля на сайте календарь и конспекты не показываются. Задайте APP_PASSWORD на Vercel.'
+  };
+  function gErr(j) {
+    j = j || {};
+    if (GERR[j.error]) return GERR[j.error];
+    if (j.error === 'google-script-error') return 'Ошибка в Apps Script: ' + (j.message || 'без описания');
+    return 'Не получилось связаться с Google (' + (j.error || 'ошибка') + ').';
+  }
+  function gfetch(action, params) {
+    var q = new URLSearchParams();
+    q.set('action', action);
+    Object.keys(params || {}).forEach(function (k) { q.set(k, params[k]); });
+    return fetch('/api/google?' + q.toString(), { cache: 'no-store' }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; });
+    });
+  }
+  function gpost(body) {
+    return fetch('/api/google', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; }); });
+  }
+  function cacheG() {
+    try { localStorage.setItem('uroki.g', JSON.stringify({ events: G.events, notes: G.notes, at: G.at, me: G.me })); } catch (e) { /* не страшно */ }
+  }
+  function loadCachedG() {
+    try {
+      var c = JSON.parse(localStorage.getItem('uroki.g') || 'null');
+      if (c && Array.isArray(c.events)) { G.events = c.events; G.notes = c.notes || []; G.at = c.at || 0; G.me = c.me || ''; G.state = 'ok'; G.cached = true; }
+    } catch (e) { /* пусто */ }
+  }
+  var gLoading = false, driveTried = false;
+  function loadGoogle() {
+    if (MODE !== 'server' || gLoading) return Promise.resolve();
+    gLoading = true;
+    if (!G.events.length) G.state = 'loading';
+    renderAll();
+    var t = todayISO();
+    return gfetch('events', { from: startOfDayIso(L.addDays(t, -21)), to: startOfDayIso(L.addDays(t, 16)), q: S.calWords })
+      .then(function (res) {
+        if (res.status === 503) { G.state = 'off'; G.events = []; G.notes = []; return; }
+        if (res.status === 401) { setChip('locked'); showGate('Сессия истекла, войдите снова'); return; }
+        if (res.status !== 200) { G.state = 'error'; G.err = gErr(res.j); return; }
+        G.events = res.j.events || []; G.me = res.j.me || ''; G.state = 'ok'; G.err = ''; G.at = Date.now(); G.cached = false;
+        cacheG();
+        renderAll();
+        return gfetch('notes', { since: L.addDays(t, -210) }).then(function (n) {
+          if (n.status === 200) { G.notes = n.j.notes || []; cacheG(); }
+          else if (n.status !== 503) G.err = 'Конспекты не загрузились: ' + gErr(n.j);
+        }).then(driveBackup);
+      })
+      .catch(function () { G.state = G.events.length ? 'ok' : 'error'; G.err = GERR['google-unreachable']; })
+      .then(function () { gLoading = false; renderAll(); });
+  }
+  function driveBackup() {
+    if (driveTried || MODE !== 'server') return;
+    driveTried = true;
+    return fetch('/api/backup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"action":"drive"}' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (j && j.date) G.drive = j.date; renderSettings(); })
+      .catch(function () { /* копия в Drive подождёт до следующего открытия */ });
+  }
+  function loadPosts() {
+    if (MODE !== 'server' || G.postsState === 'loading') return;
+    G.postsState = 'loading'; renderPosts();
+    gfetch('posts').then(function (res) {
+      if (res.status === 503) { G.postsState = 'off'; return; }
+      if (res.status !== 200) { G.postsState = 'error'; G.postsErr = gErr(res.j); return; }
+      G.posts = res.j.posts || []; G.postsState = 'ok';
+    }).catch(function () { G.postsState = 'error'; G.postsErr = GERR['google-unreachable']; })
+      .then(renderPosts);
+  }
+
+  // Сопоставление календаря с историей пересчитывается при каждом рендере.
+  var CI = { by: {}, status: {} };
+  function computeCal() {
+    CI = { by: {}, status: {} };
+    if (G.state !== 'ok' || !G.events.length) return;
+    var now = Date.now(), today = todayISO();
+    S.students.forEach(function (st) {
+      var r = L.pairEvents(st, L.eventsFor(st, G.events), { now: now, today: today, dismissed: S.dismissed });
+      CI.by[st.id] = r;
+      function set(ev, v) { (CI.status[ev.key] || (CI.status[ev.key] = {}))[st.id] = v; }
+      r.paired.forEach(function (p) { set(p.ev, p.dismissed ? { k: 'dismissed' } : { k: 'paired', e: st.h[p.idx] }); });
+      r.unmarked.forEach(function (ev) { set(ev, { k: 'unmarked' }); });
+      r.future.forEach(function (ev) { set(ev, { k: 'future' }); });
+      r.before.forEach(function (ev) { set(ev, { k: 'before' }); });
+    });
+  }
+  function nextFor(st) { var r = CI.by[st.id]; return r && r.future.length ? r.future[0] : null; }
+  function evByKey(k) { for (var i = 0; i < G.events.length; i++) if (G.events[i].key === k) return G.events[i]; return null; }
+  function unlinkedEmails(ev) {
+    var known = {};
+    S.students.forEach(function (st) { (st.emails || []).forEach(function (e) { known[e] = 1; }); });
+    (S.ignore || []).forEach(function (e) { known[e] = 1; });
+    return (ev.emails || []).filter(function (e) { return !known[e]; });
+  }
+
+  // ---------- рендер ----------
+  var openHist = {}, openNotes = {}, rowCache = {}, histAll = {}, TAB = 'main';
+  function renderAll() {
+    computeCal();
+    renderSettings();
+    renderRows();
+    renderMonth();
+    renderDue();
+    renderCal();
+    if ($('#dlgDay') && $('#dlgDay').open) renderDayCal();
+    if (TAB === 'dash') renderDash();
+    if (TAB === 'posts') renderPosts();
+  }
+
+  function setVal(sel, v) {
+    var el = $(sel); if (!el || document.activeElement === el) return;
+    if ('value' in el && el.tagName !== 'DIV') { if (el.value !== String(v)) el.value = String(v); }
+    else if (el.textContent !== String(v)) el.textContent = String(v);
+  }
+  function renderSettings() {
+    setVal('#thr', S.thr);
+    setVal('#defRate', S.defRate);
+    setVal('#tplLow', S.tplLow);
+    setVal('#tplDebt', S.tplDebt);
+    setVal('#calWords', S.calWords);
+    var gs = $('#gStatus');
+    if (gs) {
+      var t, err = false;
+      if (MODE !== 'server') t = 'Календарь и конспекты работают в версии на сервере.';
+      else if (G.state === 'off') t = 'Google не подключён. Как подключить, написано в docs/google-setup.md.';
+      else if (G.state === 'loading' || G.state === 'unknown') t = 'Подключаюсь к Google…';
+      else if (G.state === 'error') { t = G.err; err = true; }
+      else {
+        t = 'Google подключён' + (G.me ? ' (' + G.me + ')' : '') + ': в календаре ' + urokTxt(G.events.length) + ' на 5 недель, конспектов ' + G.notes.length + '.';
+        if (G.err) { t += ' ' + G.err; err = true; }
+      }
+      gs.textContent = t;
+      gs.classList.toggle('err', err);
+    }
+    var ds = $('#driveStatus');
+    if (ds) {
+      if (MODE !== 'server') ds.textContent = 'Копии на сервере и в Google Drive работают в версии на сервере.';
+      else if (G.drive) ds.textContent = 'Копия в Google Drive: последняя ' + dShort(G.drive) + ', папка «Уроки и оплаты: резервные копии».';
+      else if (G.state === 'off') ds.textContent = 'Копии в Google Drive начнутся, когда подключите Google.';
+      else ds.textContent = '';
+    }
+  }
+
+  function rowHtml(st) {
+    var b = st.bal, state = stateFor(b);
+    var nx = nextFor(st);
+    var notes = G.notes.length ? L.notesFor(st, G.notes) : [];
+    var list = st.h.map(function (e, i) { return { e: e, i: i }; }).reverse();
+    var limit = histAll[st.id] ? list.length : 12;
+    var rows = list.slice(0, limit).map(function (x) { return hRow(st, x.e, x.i, notes); }).join('');
+    var more = list.length > limit ? '<button class="tiny ghost hmore" data-act="hist-all">Показать всю историю: ' + list.length + '</button>' : '';
+    return '<div class="row" data-id="' + attr(st.id) + '" data-state="' + state + '" data-arch="' + (st.arch === '1' ? '1' : '0') + '">' +
+      '<div class="who"><span class="name" contenteditable="plaintext-only" data-ph="имя ученика">' + esc(st.name) + '</span>' +
+      '<span class="meta"><span class="ed rate" contenteditable="plaintext-only">' + esc(String(st.rate)) + '</span><span class="u">₽ за урок</span><span class="u">·</span>' +
+      '<span class="ed contact" contenteditable="plaintext-only" data-ph="контакт">' + esc(st.contact) + '</span></span>' +
+      '<span class="nx">' + (nx ? 'Следующий урок: ' + esc(when(nx.start)) : '') + '</span></div>' +
+      '<div class="bal"><span class="bal-n">' + fmt(b) + '</span><span class="bal-m">' + rub(b * st.rate) + '</span><span class="tag"></span></div>' +
+      '<div class="acts"><button class="tiny" data-act="lesson">Провёл</button><button class="tiny" data-act="cancel">Отмена</button>' +
+      '<button class="tiny" data-act="pay">Оплата</button><button class="tiny ghost" data-act="copy">Текст</button></div>' +
+      '<details class="hist" data-sid="' + attr(st.id) + '"' + (openHist[st.id] ? ' open' : '') + '><summary>История</summary><div class="histbody">' +
+      '<div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике">' + esc(st.note) + '</div>' +
+      '<div class="fld"><span class="lbl">Адреса в календаре</span><span class="ed emails" contenteditable="plaintext-only" data-ph="адрес, с которого ученик записывается">' + esc((st.emails || []).join(', ')) + '</span></div>' +
+      lastNotes(st, notes) +
+      '<div class="hrows">' + rows + '</div>' + more +
+      '<div class="hbtns"><button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>' +
+      '<button class="tiny ghost" data-act="arch"></button><button class="tiny ghost" data-act="del">Удалить</button></div>' +
+      '</div></details></div>';
+  }
+  function noteBlock(n, key, label) {
+    var url = /^https:\/\//.test(n.url || '') ? n.url : '';
+    return '<details class="nt" data-k="' + attr(key) + '"' + (openNotes[key] ? ' open' : '') + '><summary><b>' + esc(label) + '</b></summary>' +
+      '<div class="md">' + L.md(n.summary) + (url ? '<p><a href="' + attr(url) + '" target="_blank" rel="noopener noreferrer">Открыть в Granola</a></p>' : '') + '</div></details>';
+  }
+  function lastNotes(st, notes) {
+    if (!notes.length) return '';
+    return '<div class="fld"><span class="lbl">Последние конспекты</span><div class="lastnotes">' +
+      notes.slice(0, 2).map(function (n) {
+        var d = L.noteDate(n);
+        return noteBlock(n, 'last:' + st.id + ':' + n.id, (d ? dayLabel(d) : '') + (n.start ? ', ' + hhmm(n.start) : ''));
+      }).join('') + '</div></div>';
+  }
+  function hRow(st, e, i, notes) {
+    var note = notes.length ? L.noteForEntry(e, notes) : null;
+    var n = e.t === 'pay' ? ('+' + fmt(e.delta) + ' · ' + rub(e.amt)) : (e.delta > 0 ? '+' + fmt(e.delta) : fmt(e.delta));
+    return '<div class="h" data-i="' + i + '" data-t="' + attr(e.t) + '" data-delta="' + e.delta + '"' + (e.src ? ' data-src="' + attr(e.src) + '"' : '') + '>' +
+      '<span class="h-d">' + dShort(e.d) + '</span><span class="h-t"><span class="h-l">' + esc(e.label) + atText(e) + '</span>' +
+      '<span class="h-note" contenteditable="plaintext-only" data-ph="заметка">' + esc(e.note) + '</span>' +
+      (note ? noteBlock(note, st.id + ':' + i, 'Конспект') : '') + '</span>' +
+      '<span class="h-n"' + (e.src === 'cal' ? ' title="до начала учёта, на баланс не влияет"' : '') + '>' + n + '</span></div>';
+  }
+  function atText(e) {
+    if (!e.at) return '';
+    var d = L.localDate(e.at);
+    return d === e.d ? ' · ' + hhmm(e.at) : ' · урок ' + dShort(d) + ', ' + hhmm(e.at);
+  }
+  function editingIn(el) {
+    var a = document.activeElement;
+    return !!(a && a !== document.body && el.contains(a) && (a.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(a.tagName)));
+  }
+  function renderRows() {
+    var host = $('#rows');
+    var ids = {};
+    S.students.forEach(function (s) { ids[s.id] = 1; });
+    $$('#rows > .row').forEach(function (el) { if (!ids[el.dataset.id]) { el.remove(); delete rowCache[el.dataset.id]; } });
+    var prev = null;
+    S.students.forEach(function (st) {
+      var el = null;
+      for (var c = host.firstElementChild; c; c = c.nextElementSibling) if (c.dataset.id === st.id) { el = c; break; }
+      if (!(el && editingIn(el))) {
+        var html = rowHtml(st);
+        if (!el || rowCache[st.id] !== html) {
+          var tmp = document.createElement('div');
+          tmp.innerHTML = html;
+          var nel = tmp.firstElementChild;
+          if (el) el.replaceWith(nel); else host.appendChild(nel);
+          el = nel;
+          rowCache[st.id] = html;
+        }
+      }
+      var want = prev ? prev.nextElementSibling : host.firstElementChild;
+      if (want !== el) { if (prev) prev.after(el); else host.prepend(el); }
+      prev = el;
+    });
+    var ar = $('#arch');
+    host.dataset.localArch = ar && ar.checked ? '1' : '0';
+  }
+
+  var mOff = 0;
+  function renderMonth() {
+    var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + mOff);
+    var y = d.getFullYear(), m = d.getMonth();
+    var key = y + '-' + L.pad(m + 1);
+    var row = L.monthSeries(S, key, key)[0];
+    var title = MONF[m] + (y !== new Date().getFullYear() ? (' ' + y) : '');
+    $('#month').innerHTML =
+      '<div class="month-nav"><button class="ghost tiny" data-act="m-prev" aria-label="Предыдущий месяц">‹</button>' +
+      '<b>' + title + '</b>' +
+      (mOff < 0 ? '<button class="ghost tiny" data-act="m-next" aria-label="Следующий месяц">›</button>' : '') +
+      '</div><div class="mstats">' +
+      '<span class="mstat"><i>получено</i><b>' + rub(row.paid) + '</b></span>' +
+      '<span class="mstat"><i>уроков</i><b>' + row.lessons + '</b></span>' +
+      '<span class="mstat"><i>отмен со списанием</i><b>' + row.charged + '</b></span>' +
+      '<span class="mstat"><i>отмен без списания</i><b>' + row.free + '</b></span>' +
+      '<span class="mstat"><i>проведено на сумму</i><b>' + rub(row.earned) + '</b></span></div>';
+  }
+
+  function msgFor(st) {
+    var b = st.bal, nm = firstName(st);
+    if (b <= 0) {
+      var dbt = Math.abs(b);
+      return (S.tplDebt || '')
+        .replace(/\{имя\}/g, nm)
+        .replace(/\{долг\}/g, dbt ? (lessonsTxt(dbt) + ', ' + rub(dbt * st.rate)) : 'ноль занятий')
+        .replace(/\{остаток\}/g, lessonsTxt(b));
+    }
+    return (S.tplLow || '').replace(/\{имя\}/g, nm).replace(/\{остаток\}/g, lessonsTxt(b)).replace(/\{долг\}/g, lessonsTxt(0));
+  }
+  function renderDue() {
+    var t = thr();
+    var list = S.students.filter(function (s) { return s.arch !== '1' && s.bal <= t; });
+    var box = $('#due');
+    if (!list.length) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML = '<h2>Пора напомнить об оплате</h2><ul>' + list.map(function (st) {
+      var b = st.bal;
+      var s = b < 0 ? ('долг ' + lessonsTxt(Math.abs(b)) + ', ' + rub(Math.abs(b) * st.rate)) : (b === 0 ? 'занятия закончились' : ('осталось ' + lessonsTxt(b)));
+      var c = (st.contact || '').trim();
+      return '<li><b>' + esc(st.name) + '</b><em>' + s + (c ? (' · ' + esc(c)) : '') + '</em>' +
+        '<button class="tiny" data-act="copy-due" data-sid="' + attr(st.id) + '">Скопировать текст</button></li>';
+    }).join('') + '</ul>';
+  }
+
+  // Строка события: по одной на каждого ученика события, время только у первой.
+  function markText(e) {
+    if (!e) return '';
+    if (e.t === 'lesson') return e.src === 'cal' ? 'в истории' : 'проведён ✓';
+    if (e.t === 'cancel-charged') return 'отмена, списан';
+    if (e.t === 'cancel-free') return 'отмена, сохранён';
+    return 'отмечен';
+  }
+  function evActions(ev, st) {
+    var s = (CI.status[ev.key] || {})[st.id] || { k: 'none' };
+    var t = new Date(ev.start).getTime(), now = Date.now();
+    if (s.k === 'paired') return '<span class="mark' + (s.e && s.e.t !== 'lesson' ? ' free' : '') + '">' + markText(s.e) + '</span>';
+    if (s.k === 'dismissed') return '<span class="mark free">не было</span><button class="tiny ghost" data-act="ev-unskip">вернуть</button>';
+    if (s.k === 'before') return '<span class="mark free">до начала учёта</span>';
+    var out = '';
+    if (t <= now + 3600e3) out += '<button class="tiny" data-act="ev-lesson">Провёл</button>';
+    out += '<button class="tiny" data-act="ev-cancel">Отмена</button>';
+    if (t <= now) out += '<button class="tiny ghost" data-act="ev-skip">Не было</button>';
+    return out;
+  }
+  function eventBlock(ev, opts) {
+    opts = opts || {};
+    var sts = opts.only ? [opts.only] : L.studentsFor(ev, S.students);
+    var nm = L.eventName(ev.title);
+    var group = !nm ? ev.title : '';
+    var tm = opts.withDate ? dShort(L.localDate(ev.start)) + '<br>' + hhmm(ev.start) : hhmm(ev.start);
+    var out = '';
+    sts.forEach(function (st, i) {
+      out += '<div class="evr' + (i ? ' cont' : '') + '" data-ev="' + attr(ev.key) + '" data-sid="' + attr(st.id) + '">' +
+        '<span class="tm">' + (i ? '' : tm) + '</span><span class="ew"><b>' + esc(st.name) + '</b>' + (!i && group ? '<small>' + esc(group) + '</small>' : '') + '</span>' +
+        '<span class="ea">' + evActions(ev, st) + '</span></div>';
+    });
+    if (!opts.only) {
+      var un = unlinkedEmails(ev);
+      if (un.length || !sts.length) {
+        var who = (un.length === 1 && nm) ? nm : (un.length ? un.join(', ') : (nm || ev.title));
+        out += '<div class="evr' + (sts.length ? ' cont' : '') + '" data-ev="' + attr(ev.key) + '">' +
+          '<span class="tm">' + (sts.length ? '' : tm) + '</span><span class="ew"><b>' + esc(who) + '</b><small>' +
+          (group && !sts.length ? esc(group) + ' · ' : '') + 'не привязан к ученику</small></span>' +
+          '<span class="ea">' + (un.length ? '<button class="tiny" data-act="link">Привязать</button>' : '') + '</span></div>';
+      }
+    }
+    return out;
+  }
+  function weekEvents(days) {
+    var t = todayISO(), end = L.addDays(t, days);
+    return G.events.filter(function (ev) { var d = L.localDate(ev.start); return d >= t && d < end; });
+  }
+  function weekHtml(days) {
+    var evs = weekEvents(days);
+    if (!evs.length) return '<p class="gnote">На ближайшие ' + days + ' дней уроков в календаре нет.</p>';
+    var by = {}, order = [];
+    evs.forEach(function (ev) { var d = L.localDate(ev.start); if (!by[d]) { by[d] = []; order.push(d); } by[d].push(ev); });
+    return order.map(function (d) {
+      return '<div class="dayg"><div class="dl">' + cap(dayLabel(d)) + '</div>' + by[d].map(function (ev) { return eventBlock(ev); }).join('') + '</div>';
+    }).join('');
+  }
+  function unmarkedItems() {
+    var items = [];
+    S.students.forEach(function (st) {
+      if (st.arch === '1') return;
+      var r = CI.by[st.id];
+      if (r) r.unmarked.forEach(function (ev) { items.push({ ev: ev, st: st }); });
+    });
+    items.sort(function (a, b) { return a.ev.start < b.ev.start ? 1 : -1; });
+    return items;
+  }
+  function renderCal() {
+    var wk = $('#week'), un = $('#unmarked');
+    if (MODE !== 'server' || G.state === 'off' || G.state === 'unknown') { wk.hidden = true; un.hidden = true; return; }
+    var head = '<div class="phrow"><h2 class="ph">Ближайшие уроки</h2><button class="tiny ghost" data-act="g-refresh">Обновить</button></div>';
+    wk.hidden = false;
+    if (!G.events.length && G.state !== 'ok') {
+      un.hidden = true;
+      wk.innerHTML = head + '<p class="gnote' + (G.state === 'error' ? ' err' : '') + '">' + esc(G.state === 'error' ? G.err : 'Загружаю календарь…') + '</p>';
       return;
     }
-    $('#dlgPaste').close();
-    toast('Загружено учеников: '+n);
-    return;
+    var items = unmarkedItems();
+    un.hidden = !items.length;
+    un.innerHTML = items.length ? '<div class="phrow"><h2 class="ph">Не отмечены: ' + urokTxt(items.length) + '</h2>' +
+      '<span class="gnote">прошли по календарю, а в истории их нет</span></div>' +
+      items.map(function (x) { return eventBlock(x.ev, { only: x.st, withDate: true }); }).join('') : '';
+    wk.innerHTML = head + weekHtml(7) + (G.state === 'error' ? '<p class="gnote err">' + esc(G.err) + '</p>' : '');
   }
-  if(act==='logout'){logout();return;}
-  if(act==='close'){var dg=b.closest('dialog');if(dg)dg.close();return;}
-  if(act==='copy-due'){
-    var r=$('#rows .row[data-id="'+b.dataset.sid+'"]');
-    if(r)copyText(msgFor(r),'Текст скопирован'); return;
+
+  // ---------- диалоги ----------
+  var curSid = null, curEv = null;
+  function openPay(st) {
+    curSid = st.id;
+    $('#payWho').textContent = (st.name || '') + ' · ' + st.rate + ' ₽ за урок';
+    $('#payD').value = todayISO(); $('#payN').value = 5; $('#payS').value = Math.round(5 * st.rate); $('#payC').value = '';
+    $$('#packs button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.n === '5' ? 'true' : 'false'); });
+    $('#dlgPay').showModal();
   }
-  if(act==='pay-ok'){
-    if(!curRow)return;
-    var n=Math.round(num($('#payN').value)), sum=Math.round(num($('#payS').value));
-    if(!n){toast('Укажите количество уроков');return;}
-    var r2=curRow, dt=$('#payD').value||todayISO(), cm=($('#payC').value||'').trim();
-    commit(function(){doPay(r2,n,sum,dt,cm);});
-    $('#dlgPay').close(); toast('Оплата записана'); return;
+  function syncPaySum() { var st = stById(curSid); if (st) $('#payS').value = Math.round(num($('#payN').value) * st.rate); }
+  function openCancel(st, ev) {
+    curSid = st.id; curEv = ev || null;
+    $('#cxWho').textContent = st.name || '';
+    var info = 'Предупредил раньше чем за 6 часов, урок остаётся. Позже, урок сгорает.';
+    if (ev) {
+      var dl = new Date(new Date(ev.start).getTime() - 6 * 3600e3);
+      info = 'Урок ' + when(ev.start) + '. Если ученик предупредил до ' + (L.localDate(dl) === L.localDate(ev.start) ? hhmm(dl.toISOString()) : when(dl.toISOString())) + ', урок не списывается.';
+    }
+    $('#cxInfo').textContent = info;
+    $('#cxD').value = ev ? L.localDate(ev.start) : todayISO();
+    $('#dlgCancel').showModal();
   }
-  if(act==='cx-free'||act==='cx-charge'){
-    if(!curRow)return;
-    var r3=curRow, dt3=$('#cxD').value||todayISO(), k=(act==='cx-charge')?'cancel-charged':'cancel-free';
-    commit(function(){doOp(r3,k,dt3);});
-    $('#dlgCancel').close(); toast(act==='cx-charge'?'Урок списан':'Урок сохранён'); return;
+  function renderDay() {
+    $('#dayList').innerHTML = S.students.filter(function (s) { return s.arch !== '1'; }).map(function (st) {
+      return '<div class="dayrow" data-sid="' + attr(st.id) + '"><span class="dn">' + esc(st.name) + '</span>' +
+        '<span class="db">' + fmt(st.bal) + '</span>' +
+        '<button class="tiny" data-act="d-lesson">Провёл</button>' +
+        '<button class="tiny" data-act="d-charge">Отмена, списать</button>' +
+        '<button class="tiny" data-act="d-free">Отмена, оставить</button>' +
+        '<span class="done"></span></div>';
+    }).join('');
+    renderDayCal();
   }
-  if(act==='d-lesson'||act==='d-charge'||act==='d-free'){
-    var dr=b.closest('.dayrow'); if(!dr)return;
-    var tr=$('#rows .row[data-id="'+dr.dataset.sid+'"]'); if(!tr)return;
-    var kind=act==='d-lesson'?'lesson':(act==='d-charge'?'cancel-charged':'cancel-free');
-    var dd=$('#dayD').value||todayISO();
-    commit(function(){doOp(tr,kind,dd);}).then(function(){
-      $('.db',dr).textContent=fmt(balOf(tr));
-      $('.done',dr).textContent=kind==='lesson'?'провёл ✓':(kind==='cancel-charged'?'списано ✓':'отмена ✓');
+  function renderDayCal() {
+    var host = $('#dayCal'); if (!host) return;
+    if (G.state !== 'ok') { host.innerHTML = ''; return; }
+    var d = $('#dayD').value || todayISO();
+    var evs = G.events.filter(function (ev) { return L.localDate(ev.start) === d; });
+    host.innerHTML = evs.length ? '<div class="sched" style="padding:0 0 6px"><h2 class="ph">По календарю</h2>' +
+      evs.map(function (ev) { return eventBlock(ev); }).join('') + '</div>' : '';
+  }
+  function openDay() { $('#dayD').value = todayISO(); renderDay(); $('#dlgDay').showModal(); }
+
+  // Привязка адресов события к ученикам.
+  function openLink(ev) {
+    curEv = ev;
+    var un = unlinkedEmails(ev), nm = L.eventName(ev.title);
+    $('#linkWho').textContent = when(ev.start) + (nm ? '' : ' · ' + ev.title);
+    var opts = function (sel) {
+      return S.students.map(function (st) {
+        return '<option value="s:' + attr(st.id) + '"' + (sel === st.id ? ' selected' : '') + '>' + esc(st.name) + (st.arch === '1' ? ' (архив)' : '') + '</option>';
+      }).join('');
+    };
+    $('#linkBody').innerHTML = un.map(function (e) {
+      var person = { emails: [e], names: un.length === 1 && nm ? [nm] : [] };
+      var sid = L.suggest(person, S.students);
+      var name = person.names[0] || e.split('@')[0];
+      return '<div class="field" data-email="' + attr(e) + '"><label>' + esc(e) + (person.names[0] ? ' · ' + esc(person.names[0]) : '') + '</label>' +
+        '<select data-link="sel">' + opts(sid) + '<option value="new"' + (sid ? '' : ' selected') + '>Новый ученик</option><option value="ignore">Не ученик, не показывать</option></select>' +
+        '<div class="two"' + (sid ? ' hidden' : '') + ' data-link="new"><input type="text" data-link="name" value="' + attr(name) + '" aria-label="Имя">' +
+        '<input type="number" data-link="rate" value="' + attr(S.defRate) + '" aria-label="Ставка, ₽"></div></div>';
+    }).join('') || '<p class="hint">Все адреса этого события уже привязаны.</p>';
+    $('#dlgLink').showModal();
+  }
+  function saveLink() {
+    var rows = $$('#linkBody .field[data-email]');
+    commit(function () {
+      rows.forEach(function (f) {
+        var e = f.dataset.email, v = $('[data-link="sel"]', f).value;
+        if (v === 'ignore') { S.ignore = (S.ignore || []).concat([e]); return; }
+        if (v === 'new') {
+          S.students.push({ id: newId(), arch: '0', name: ($('[data-link="name"]', f).value || e).trim(), rate: Math.round(num($('[data-link="rate"]', f).value)) || Number(S.defRate) || 2000,
+            contact: '', note: '', bal: 0, emails: [e], since: todayISO(), h: [] });
+          return;
+        }
+        var st = stById(v.slice(2));
+        if (st && st.emails.indexOf(e) < 0) st.emails.push(e);
+      });
     });
-    return;
+    $('#dlgLink').close();
+    toast('Сохранено');
   }
-  if(!row)return;
-  if(act==='lesson'){commit(function(){doOp(row,'lesson',todayISO());});toast('Занятие записано');return;}
-  if(act==='cancel'){openCancel(row);return;}
-  if(act==='pay'){openPay(row);return;}
-  if(act==='copy'){copyText(msgFor(row),'Текст скопирован');return;}
-  if(act==='undo'){
-    if(!needSecond('undo:'+row.dataset.id,'Отменить последнюю запись? Нажмите ещё раз'))return;
-    commit(function(){if(!doUndo(row))toast('История пуста');});return;
-  }
-  if(act==='arch'){commit(function(){row.dataset.arch=row.dataset.arch==='1'?'0':'1';});return;}
-  if(act==='del'){
-    if(!needSecond('del:'+row.dataset.id,'Удалить ученика и всю историю? Нажмите ещё раз'))return;
-    commit(function(){row.remove();});toast('Ученик удалён');return;
-  }
-}
 
-function bind(){
-  document.addEventListener('click',onClick);
-  document.addEventListener('claude:edit',function(){renderMonth();renderDue();});
-  document.addEventListener('keydown',function(e){
-    if(e.key==='Enter'&&e.target.matches&&e.target.matches('.name,.rate,.contact,.h-note')){e.preventDefault();e.target.blur();}
-  });
-  document.addEventListener('paste',function(e){
-    var t=e.target; if(!t||!t.isContentEditable)return;
-    var cd=e.clipboardData||window.clipboardData; if(!cd)return;
-    e.preventDefault();
-    var txt=cd.getData('text')||'';
-    if(!t.classList.contains('tpl'))txt=txt.replace(/\s+/g,' ').trim();
-    document.execCommand('insertText',false,txt);
-  });
-  document.addEventListener('focusout',function(e){
-    var t=e.target;
-    if(t&&t.classList&&t.classList.contains('rate')){
-      var row=t.closest('.row'); if(!row)return;
-      var v=Math.round(num(t.textContent));
-      commit(function(){t.textContent=String(v>0?v:0);paint(row,balOf(row));});
+  // ---------- импорт истории из календаря ----------
+  var IMP = null;
+  function openImport() {
+    if (MODE !== 'server') { toast('История из календаря доступна в версии на сервере'); return; }
+    if (G.state === 'off') { toast('Сначала подключите Google: docs/google-setup.md'); return; }
+    IMP = { from: L.addDays(todayISO(), -183), events: [], people: [], map: {}, excl: {}, plan: null, status: '', err: false, busy: false };
+    renderImport();
+    $('#impOk').disabled = true;
+    $('#dlgImport').showModal();
+  }
+  function renderImport() {
+    var b = $('#impBody');
+    var top = '<div class="two" style="align-items:flex-end"><div class="field"><label for="impFrom">С какой даты искать</label><input type="date" id="impFrom" value="' + attr(IMP.from) + '"></div>' +
+      '<div class="field" style="flex:0 0 auto"><button class="primary" data-act="imp-find"' + (IMP.busy ? ' disabled' : '') + '>Найти уроки</button></div></div>' +
+      '<p class="hint">Ищу события, в названии которых есть «' + esc(S.calWords) + '». Уроки до начала учёта у ученика попадут в историю с нулевым списанием. Уроки после начала учёта не добавляются: они только связываются с вашими отметками. Пока вы не нажмёте «Загрузить в историю», ничего не сохраняется.</p>' +
+      '<p class="status' + (IMP.err ? ' err' : '') + '" id="impStatus">' + esc(IMP.status) + '</p>';
+    if (!IMP.people.length) { b.innerHTML = top; return; }
+    var opts = function (sel) {
+      return S.students.map(function (st) {
+        return '<option value="s:' + attr(st.id) + '"' + (sel === 's:' + st.id ? ' selected' : '') + '>' + esc(st.name) + (st.arch === '1' ? ' (архив)' : '') + '</option>';
+      }).join('') + '<option value="new"' + (sel === 'new' ? ' selected' : '') + '>Новый ученик</option><option value="skip"' + (sel === 'skip' ? ' selected' : '') + '>Пропустить</option>';
+    };
+    var evIdx = {};
+    IMP.events.forEach(function (ev) { evIdx[ev.key] = ev; });
+    b.innerHTML = top + '<div class="plan" id="impPlan"></div><div class="people">' + IMP.people.map(function (p) {
+      var m = IMP.map[p.id], sel = m.skip ? 'skip' : (m.sid ? 's:' + m.sid : 'new');
+      var cr = m.create || { name: p.label, rate: S.defRate, arch: false };
+      var meta = p.emails.join(', ') + (p.emails.length ? ' · ' : '') + urokTxt(p.count) + ', ' + dShort(L.localDate(p.first)) + ' — ' + dShort(L.localDate(p.last)) + (p.titles.length ? ' · ' + p.titles.join(', ') : '');
+      return '<div class="person" data-p="' + attr(p.id) + '"><div><div class="pn">' + esc(p.names.join(' / ') || p.emails[0] || p.label) + '</div><div class="pm">' + esc(meta) + '</div></div>' +
+        '<div class="pc"><select data-imp="sel" aria-label="Ученик">' + opts(sel) + '</select>' +
+        '<div class="pnew"' + (sel === 'new' ? '' : ' hidden') + '><input type="text" data-imp="name" value="' + attr(cr.name) + '" aria-label="Имя">' +
+        '<input type="number" data-imp="rate" value="' + attr(cr.rate) + '" aria-label="Ставка, ₽"><label class="chk"><input type="checkbox" data-imp="arch"' + (cr.arch ? ' checked' : '') + '> в архив</label></div></div>' +
+        '<details class="pev"><summary>Уроки по датам</summary><div class="evlist">' + p.keys.map(function (k) {
+          var ev = evIdx[k];
+          return ev ? '<label><input type="checkbox" data-imp="ev" data-k="' + attr(k) + '"' + (IMP.excl[k] ? '' : ' checked') + '>' + esc(dShort(L.localDate(ev.start)) + ', ' + hhmm(ev.start)) + '</label>' : '';
+        }).join('') + '</div></details></div>';
+    }).join('') + '</div>';
+    renderPlan();
+  }
+  function renderPlan() {
+    if (!IMP || !IMP.people.length) return;
+    IMP.plan = L.planImport(S, IMP.events, IMP.people, IMP.map, { excluded: IMP.excl, today: todayISO(), now: Date.now() });
+    var p = IMP.plan;
+    var lines = p.students.map(function (x) {
+      var bits = [];
+      if (x.add.length) bits.push('в историю ' + x.add.length);
+      if (x.already + x.link.length) bits.push('уже отмечено ' + (x.already + x.link.length));
+      if (x.unmarked) bits.push('не отмечено ' + x.unmarked);
+      if (x.future) bits.push('впереди ' + x.future);
+      return '<div><b>' + esc(x.name) + (x.isNew ? ' (новый' + (x.arch === '1' ? ', в архив' : '') + ')' : '') + '</b>: ' + (bits.join(', ') || 'нечего добавить') + (x.add.length && !x.isNew ? ', начало учёта ' + dShort(x.start) : '') + '</div>';
+    }).join('');
+    $('#impPlan').innerHTML = '<div><b>Добавится в историю: ' + urokTxt(p.add) + '.</b> Балансы не изменятся.</div>' +
+      (p.unmarked ? '<div>После начала учёта не отмечено: ' + urokTxt(p.unmarked) + '. Их я не добавляю, свежие появятся в блоке «Не отмечены».</div>' : '') + lines;
+    $('#impOk').disabled = !(p.add || p.link || p.students.some(function (x) { return x.isNew || x.emails.length; }));
+  }
+  function findImport() {
+    var from = ($('#impFrom').value || IMP.from);
+    IMP.from = from;
+    var to = L.addDays(todayISO(), 1);
+    if (L.dayDiff(from, to) > 400) { IMP.status = 'Не больше 400 дней за раз.'; IMP.err = true; renderImport(); return; }
+    IMP.busy = true; IMP.status = 'Ищу уроки в календаре…'; IMP.err = false; renderImport();
+    gfetch('events', { from: startOfDayIso(from), to: startOfDayIso(to), q: S.calWords }).then(function (res) {
+      IMP.busy = false;
+      if (res.status !== 200) { IMP.status = res.status === 503 ? 'Google не подключён.' : gErr(res.j); IMP.err = true; renderImport(); return; }
+      var now = Date.now();
+      IMP.events = (res.j.events || []).filter(function (ev) { return new Date(ev.start).getTime() <= now; });
+      IMP.people = L.groupPeople(IMP.events);
+      IMP.map = {}; IMP.excl = {};
+      IMP.people.forEach(function (p) {
+        var sid = L.suggest(p, S.students);
+        var stale = now - new Date(p.last).getTime() > 30 * 864e5;
+        IMP.map[p.id] = sid ? { sid: sid } : { create: { name: p.names[0] || p.emails[0].split('@')[0], rate: Number(S.defRate) || 2000, arch: stale } };
+      });
+      IMP.status = IMP.events.length ? ('Найдено ' + urokTxt(IMP.events.length) + ', людей: ' + IMP.people.length + '. Проверьте, кто есть кто.') : 'Уроков за этот период не нашлось.';
+      renderImport();
+    }).catch(function () { IMP.busy = false; IMP.status = GERR['google-unreachable']; IMP.err = true; renderImport(); });
+  }
+  function onImportInput(t) {
+    var row = t.closest('.person'); if (!row || !IMP) return;
+    var p = row.dataset.p, kind = t.dataset.imp, m = IMP.map[p];
+    if (kind === 'ev') { if (t.checked) delete IMP.excl[t.dataset.k]; else IMP.excl[t.dataset.k] = true; }
+    else if (kind === 'sel') {
+      var v = t.value, keep = m.create || { name: IMP.people.filter(function (x) { return x.id === p; })[0].label, rate: Number(S.defRate) || 2000, arch: false };
+      IMP.map[p] = v === 'skip' ? { skip: true, create: keep } : (v === 'new' ? { create: keep } : { sid: v.slice(2), create: keep });
+      $('.pnew', row).hidden = v !== 'new';
+    } else if (m.create) {
+      if (kind === 'name') m.create.name = t.value;
+      if (kind === 'rate') m.create.rate = Math.round(num(t.value));
+      if (kind === 'arch') m.create.arch = t.checked;
     }
-  });
-  document.addEventListener('change',function(e){
-    var t=e.target;
-    if(t.id==='arch'){$('#rows').dataset.localArch=t.checked?'1':'0';return;}
-    if(t.id==='thr'){commit(function(){$$('#rows .row').forEach(function(r){paint(r,balOf(r));});});return;}
-    if(t.id==='payN'){syncPaySum();return;}
-    if(t.id==='importFile'){ if(t.files&&t.files[0])importFile(t.files[0]); t.value=''; return; }
-  });
-  document.addEventListener('input',function(e){
-    if(e.target.id==='payN'){syncPaySum();
-      $$('#packs button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.n===String(Math.round(num($('#payN').value)))?'true':'false');});}
-  });
-  window.addEventListener('beforeunload',function(){
-    if(MODE==='server'&&dirty&&navigator.sendBeacon){
-      try{navigator.sendBeacon('/api/state',new Blob([JSON.stringify(snapshot())],{type:'application/json'}));}catch(e){}
-    }
-  });
-  var gf=$('#gateForm');
-  if(gf)gf.addEventListener('submit',function(e){
-    e.preventDefault();
-    var pw=$('#gatePw'); login(pw?pw.value:'');
-  });
-  var packs=$('#packs');
-  if(packs)packs.addEventListener('click',function(e){
-    var b=e.target.closest('button[data-n]'); if(!b)return;
-    $('#payN').value=b.dataset.n; syncPaySum();
-    $$('#packs button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
-  });
-}
-function applySnapshot(d){
-  if(!d||!d.students||!d.students.length)return false;
-  if(d.thr)$('#thr').value=d.thr;
-  if(d.defRate)$('#defRate').value=d.defRate;
-  if(d.tplLow)$('#tplLow').textContent=d.tplLow;
-  if(d.tplDebt)$('#tplDebt').textContent=d.tplDebt;
-  var host=$('#rows'); host.innerHTML='';
-  d.students.forEach(function(s){
-    var el=$('#tpl-row').content.firstElementChild.cloneNode(true);
-    el.dataset.id=s.id||('s'+Math.random().toString(36).slice(2));
-    el.dataset.arch=s.arch||'0';
-    $('.name',el).textContent=s.name||'';
-    $('.rate',el).textContent=String(s.rate||2000);
-    $('.contact',el).textContent=s.contact||'';
-    $('.snote',el).textContent=s.note||'';
-    (s.h||[]).forEach(function(h){addH(el,{d:h.d,t:h.t,delta:h.delta,amt:h.amt,label:h.label,note:h.note});});
-    host.appendChild(el);
-    paint(el,s.bal||0);
-  });
-  return true;
-}
-function loadLocal(){
-  var raw=null; try{raw=localStorage.getItem('uroki.backup');}catch(e){}
-  if(!raw)return false;
-  var d; try{d=JSON.parse(raw);}catch(e){return false;}
-  return applySnapshot(d);
-}
-function showGate(msg){
-  var g=$('#gate'); if(!g)return;
-  g.hidden=false;
-  var e=$('#gateErr');
-  if(e){ e.textContent=msg||''; e.hidden=!msg; }
-  var f=$('#gatePw'); if(f){f.value='';setTimeout(function(){f.focus();},50);}
-}
-function hideGate(){ var g=$('#gate'); if(g)g.hidden=true; }
+    renderPlan();
+  }
+  function applyImportNow() {
+    if (!IMP || !IMP.plan) return;
+    var before = {};
+    S.students.forEach(function (s) { before[s.id] = s.bal; });
+    var next = L.applyImport(S, IMP.plan, function () { return newId(); });
+    // Балансы не трогаем ни при каких условиях: если что-то не сходится, импорт отменяется.
+    var broken = next.students.some(function (s) { return before[s.id] != null && s.bal !== before[s.id]; });
+    if (broken) { IMP.status = 'Импорт остановлен: сошлись не все балансы. Ничего не изменено.'; IMP.err = true; renderImport(); return; }
+    try { localStorage.setItem('uroki.beforeImport', JSON.stringify(snapshot())); } catch (e) { /* не страшно */ }
+    var n = IMP.plan.add;
+    commit(function () { S = next; });
+    $('#dlgImport').close();
+    IMP = null;
+    toast('В историю добавлено: ' + urokTxt(n) + '. Балансы не изменились.');
+  }
 
-// Автономная сборка: пробуем серверное хранилище, иначе живём на localStorage.
-function startServer(){
-  if(location.protocol==='file:'){goLocal();return Promise.resolve();}
-  setChip('checking');
-  return fetch('/api/state',{cache:'no-store'})
-    .then(function(r){
-      if(r.status===401){MODE='server';setChip('locked');showGate('');return null;}
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      return r.json();
-    })
-    .then(function(j){
-      if(j===null)return;
-      MODE='server'; hideGate();
-      // Выходить есть смысл только если пароль на сервере задан.
-      var needsPw=!!(j&&j.auth&&j.auth.required);
-      var btn=$('[data-act="logout"]'); if(btn)btn.hidden=!needsPw;
-      var warn=$('#openWarn'); if(warn)warn.hidden=needsPw;
-      if(j&&j.state&&applySnapshot(j.state)){
-        renderMonth(); renderDue(); backup(); setChip('server');
-      } else {
-        // Хранилище пустое: заливаем то, что есть на руках, как начальное состояние.
-        if(loadLocal()){renderMonth();renderDue();}
-        backup(); setChip('server'); dirty=true; flush();
+  // ---------- обзор ----------
+  function renderDash() {
+    var v = $('#v-dash'); if (!v) return;
+    var today = todayISO(), cur = L.ym(today);
+    var y = +cur.slice(0, 4), m = +cur.slice(5, 7);
+    var from12 = (m === 12 ? y : y - 1) + '-' + L.pad(m === 12 ? 1 : m + 1);
+    var first = L.firstYm(S) || cur;
+    var ms = L.monthSeries(S, first > from12 ? first : from12, cur);
+    var now = ms[ms.length - 1];
+    var active = S.students.filter(function (s) { return s.arch !== '1'; });
+    var prepaid = 0, debt = 0, nPre = 0, nDebt = 0;
+    active.forEach(function (s) {
+      if (s.bal > 0) { prepaid += s.bal * s.rate; nPre++; }
+      if (s.bal < 0) { debt += -s.bal * s.rate; nDebt++; }
+    });
+    var mi = +cur.slice(5, 7) - 1;
+    var kpis = '<div class="kpis">' +
+      kpi('Уроков в ' + MONP[mi], fmt(now.lessons), now.charged ? '+ ' + now.charged + ' со списанием при отмене' : 'без отмен со списанием') +
+      kpi('Проведено на сумму', rub(now.earned), 'уроки × ставка ученика') +
+      kpi('Получено в ' + MONP[mi], rub(now.paid), 'оплаты, записанные в учёт') +
+      kpi('Предоплачено', rub(prepaid), nPre ? 'у ' + nPre + ' ' + plural(nPre, ['ученика', 'учеников', 'учеников']) : 'ни у кого') +
+      kpi('Долг', rub(debt), nDebt ? 'у ' + nDebt + ' ' + plural(nDebt, ['ученика', 'учеников', 'учеников']) : 'долгов нет') + '</div>';
+    var w = Math.max(280, (v.clientWidth || 880) - 34);
+    var calOn = MODE === 'server' && G.state === 'ok';
+    v.innerHTML = kpis +
+      '<section class="panel chart viz"><h2>Проведено и получено по месяцам</h2>' +
+      '<p class="sub2">Оплаты учитываются с начала учёта, уроки из календаря и раньше.</p>' +
+      '<div class="legend"><span><i style="background:var(--s1)"></i>Проведено на сумму</span><span><i style="background:var(--s2)"></i>Получено</span></div>' +
+      chartMonths(ms, w) + tableMonths(ms) + '</section>' +
+      '<section class="panel chart viz"><h2>Балансы учеников</h2><p class="sub2">В уроках: справа предоплата, слева долг.</p>' + chartBalances(active, w) + '</section>' +
+      '<div class="two-col">' +
+      '<section class="panel pad sched" style="padding:14px 16px"><h2 class="ph">Неделя вперёд</h2>' + (calOn ? weekHtml(7) : '<p class="gnote">Появится, когда подключён Google.</p>') + '</section>' +
+      '<section class="panel pad"><h2 class="ph">Уроки без конспекта, 30 дней</h2>' + noNotesHtml(calOn) + '</section></div>';
+  }
+  function kpi(label, value, small) {
+    return '<div class="panel kpi"><i>' + esc(label) + '</i><b>' + esc(value) + '</b><small>' + esc(small) + '</small></div>';
+  }
+  // Шаг шкалы 1, 2 или 5 × 10^n, чтобы подписи оси были ровными числами.
+  function niceScale(v) {
+    if (v <= 0) v = 1000;
+    var raw = v / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+    var step = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+    var n = Math.max(1, Math.ceil(v / step));
+    return { step: step, n: n, max: step * n };
+  }
+  function colPath(x, y, w, h) {
+    if (h <= 0) return '';
+    var r = Math.min(4, h, w / 2);
+    return 'M' + x + ',' + (y + h) + 'V' + (y + r) + 'Q' + x + ',' + y + ' ' + (x + r) + ',' + y + 'H' + (x + w - r) + 'Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + 'V' + (y + h) + 'Z';
+  }
+  function tipAttr(lines) { return ' data-tip="' + attr(lines.join('\n')) + '" tabindex="0"'; }
+  function monthName(k) { return MONF[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4); }
+  function chartMonths(ms, W) {
+    var H = 230, ml = 52, mr = 8, mt = 18, mb = 26;
+    var iw = W - ml - mr, ih = H - mt - mb;
+    var sc = niceScale(Math.max.apply(null, ms.map(function (r) { return Math.max(r.earned, r.paid); }).concat([0]))), max = sc.max;
+    var band = iw / ms.length, bw = Math.max(4, Math.min(20, band * 0.3)), gap = 2;
+    var yv = function (v) { return mt + ih - (v / max) * ih; };
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="Проведено и получено по месяцам">';
+    for (var i = 0; i <= sc.n; i++) {
+      var tv = sc.step * i, ty = Math.round(yv(tv)) + 0.5;
+      s += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + ty + '" y2="' + ty + '" stroke="' + (i ? 'var(--grid)' : 'var(--axis)') + '" stroke-width="1"/>';
+      s += '<text x="' + (ml - 8) + '" y="' + (ty + 4) + '" text-anchor="end">' + esc(compact(tv)) + '</text>';
+    }
+    var step = band < 34 ? 2 : 1;
+    ms.forEach(function (r, i) {
+      var cx = ml + band * i + band / 2;
+      var x1 = cx - bw - gap / 2, x2 = cx + gap / 2;
+      s += '<path d="' + colPath(x1, yv(r.earned), bw, ih + mt - yv(r.earned)) + '" fill="var(--s1)"/>';
+      s += '<path d="' + colPath(x2, yv(r.paid), bw, ih + mt - yv(r.paid)) + '" fill="var(--s2)"/>';
+      if (i % step === (ms.length - 1) % step) s += '<text x="' + cx + '" y="' + (H - 8) + '" text-anchor="middle">' + MONS[+r.ym.slice(5, 7) - 1] + '</text>';
+      if (i === ms.length - 1 && r.earned > 0) s += '<text class="val" x="' + (x1 + bw / 2) + '" y="' + (yv(r.earned) - 6) + '" text-anchor="middle">' + esc(compact(r.earned)) + '</text>';
+      s += '<rect class="hit" x="' + (ml + band * i) + '" y="' + mt + '" width="' + band + '" height="' + ih + '"' +
+        tipAttr([monthName(r.ym), 'Проведено на ' + rub(r.earned) + ' · ' + urokTxt(r.lessons + r.charged), 'Получено ' + rub(r.paid)]) + '/>';
+    });
+    return s + '</svg>';
+  }
+  function tableMonths(ms) {
+    return '<details class="tview"><summary>Таблица</summary><table><thead><tr><th>Месяц</th><th>Уроков</th><th>Отмен со списанием</th><th>Проведено на сумму</th><th>Получено</th></tr></thead><tbody>' +
+      ms.slice().reverse().map(function (r) {
+        return '<tr><td>' + monthName(r.ym) + '</td><td>' + r.lessons + '</td><td>' + r.charged + '</td><td>' + rub(r.earned) + '</td><td>' + rub(r.paid) + '</td></tr>';
+      }).join('') + '</tbody></table></details>';
+  }
+  function chartBalances(list, W) {
+    if (!list.length) return '<p class="gnote">Учеников пока нет.</p>';
+    var rows = list.slice().sort(function (a, b) { return b.bal - a.bal; });
+    var rh = 30, lw = Math.min(170, Math.round(W * 0.34)), mr = 120, H = rows.length * rh + 8;
+    var maxAbs = Math.max.apply(null, rows.map(function (s) { return Math.abs(s.bal); }).concat([1]));
+    var hasNeg = rows.some(function (s) { return s.bal < 0; });
+    var iw = W - lw - mr;
+    var zero = hasNeg ? lw + iw * (maxAbs / (2 * maxAbs)) : lw;
+    var scale = hasNeg ? iw / (2 * maxAbs) : iw / maxAbs;
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="Балансы учеников">';
+    s += '<line x1="' + (Math.round(zero) + 0.5) + '" x2="' + (Math.round(zero) + 0.5) + '" y1="2" y2="' + (H - 4) + '" stroke="var(--axis)" stroke-width="1"/>';
+    rows.forEach(function (st, i) {
+      var y = 4 + i * rh, bh = 16, by = y + (rh - bh) / 2 - 2;
+      var len = Math.abs(st.bal) * scale, neg = st.bal < 0;
+      var nm = st.name.length > 22 ? st.name.slice(0, 21) + '…' : st.name;
+      s += '<text class="lbl" x="' + (lw - 10) + '" y="' + (by + 12) + '" text-anchor="end">' + esc(nm) + '</text>';
+      if (len > 0) {
+        var r = Math.min(4, len / 2, bh / 2), x0 = neg ? zero - len : zero, x1 = neg ? zero : zero + len;
+        var d = neg
+          ? 'M' + x1 + ',' + by + 'H' + (x0 + r) + 'Q' + x0 + ',' + by + ' ' + x0 + ',' + (by + r) + 'V' + (by + bh - r) + 'Q' + x0 + ',' + (by + bh) + ' ' + (x0 + r) + ',' + (by + bh) + 'H' + x1 + 'Z'
+          : 'M' + x0 + ',' + by + 'H' + (x1 - r) + 'Q' + x1 + ',' + by + ' ' + x1 + ',' + (by + r) + 'V' + (by + bh - r) + 'Q' + x1 + ',' + (by + bh) + ' ' + (x1 - r) + ',' + (by + bh) + 'H' + x0 + 'Z';
+        s += '<path d="' + d + '" fill="' + (neg ? 'var(--neg)' : 'var(--pos)') + '"/>';
       }
-    })
-    .catch(function(e){console.warn('storage',e);goLocal();});
-}
-function login(pw){
-  var err=$('#gateErr');
-  return fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})})
-    .then(function(r){
-      if(r.ok)return startServer();
-      if(r.status===429){showGate('Слишком много попыток. Подождите 15 минут.');return;}
-      if(r.status===400){showGate('Пароль на сервере не задан. Добавьте APP_PASSWORD в настройках проекта.');return;}
-      showGate('Пароль не подошёл');
-    })
-    .catch(function(){showGate('Сервер не отвечает');});
-}
-function logout(){
-  if(!needSecond('logout','Выйти из аккаунта? Нажмите ещё раз'))return;
-  fetch('/api/session',{method:'DELETE',cache:'no-store'})
-    .then(function(){return null;},function(){return null;})
-    .then(function(){location.replace(location.pathname+'?logout='+Date.now());});
-}
-// Разбор чужого JSON терпимый: полный снимок, голый массив учеников или
-// список без истории - всё приводится к внутреннему виду.
-function normalize(d){
-  if(typeof d==='string'){ try{ d=JSON.parse(d); }catch(e){ return null; } }
-  if(Array.isArray(d)) d={students:d};
-  if(!d||typeof d!=='object') return null;
-  var list=d.students||d.ученики||d.items;
-  if(!Array.isArray(list)||!list.length) return null;
-  var today=todayISO();
-  var defRate=Number(d.defRate)||Number($('#defRate').value)||2000;
-  return {
-    v:1, ts:Date.now(),
-    thr:d.thr!=null?String(d.thr):$('#thr').value,
-    defRate:String(defRate),
-    tplLow:d.tplLow||$('#tplLow').textContent,
-    tplDebt:d.tplDebt||$('#tplDebt').textContent,
-    students:list.map(function(x,i){
-      var bal=Number(x.bal!=null?x.bal:(x.balance!=null?x.balance:x.остаток));
-      if(!isFinite(bal))bal=0;
-      var rate=Number(x.rate!=null?x.rate:x.ставка)||defRate;
-      var h=Array.isArray(x.h)?x.h:(Array.isArray(x.history)?x.history:[]);
-      if(!h.length)h=[{d:today,t:'init',delta:bal,amt:0,label:'Стартовый остаток',note:''}];
-      return {
-        id:String(x.id||('s'+(i+1)+'-'+Math.random().toString(36).slice(2,6))),
-        arch:String(x.arch||'0')==='1'?'1':'0',
-        name:String(x.name||x.имя||'Без имени'),
-        rate:rate, contact:String(x.contact||x.контакт||''), note:String(x.note||''),
-        bal:Math.round(bal),
-        h:h.map(function(r){return{
-          d:String(r.d||r.date||today), t:String(r.t||r.type||'init'),
-          delta:Number(r.delta)||0, amt:Number(r.amt||r.amount)||0,
-          label:String(r.label||'Запись'), note:String(r.note||'')
-        };})
-      };
-    })
-  };
-}
-// Перед заменой откладываем текущее состояние, чтобы неудачный импорт можно было откатить.
-function loadSnapshot(input){
-  var d=normalize(input);
-  if(!d)return null;
-  try{ localStorage.setItem('uroki.beforeImport',JSON.stringify(snapshot())); }catch(e){}
-  commit(function(){ applySnapshot(d); });
-  return d.students.length;
-}
-function importFile(file){
-  var reader=new FileReader();
-  reader.onload=function(){
-    var n=loadSnapshot(String(reader.result));
-    toast(n?('Загружено учеников: '+n):'В файле не нашлось учеников');
-  };
-  reader.onerror=function(){ toast('Файл не читается'); };
-  reader.readAsText(file);
-}
-function goLocal(){
-  MODE='local'; setChip('local');
-  if(loadLocal()){renderMonth();renderDue();} else backup();
-}
-function init(){
-  var ar=$('#arch'); if(ar)$('#rows').dataset.localArch=ar.checked?'1':'0';
-  renderMonth(); renderDue();
-  artReady.then(function(a){
-    if(a){MODE='artifact';setChip('artifact');backup();return;}
-    return startServer();
-  });
-}
-if(!window.__urokiBound){window.__urokiBound=true;bind();}
-init();
+      var tx = neg ? Math.max(lw + 4, zero) + (len ? 8 : 6) : zero + len + 8;
+      s += '<text class="val" x="' + tx + '" y="' + (by + 12) + '">' + esc(fmt(st.bal) + ' · ' + rub(st.bal * st.rate)) + '</text>';
+      s += '<rect class="hit" x="0" y="' + y + '" width="' + W + '" height="' + rh + '"' +
+        tipAttr([st.name, (st.bal < 0 ? 'Долг ' : 'Осталось ') + lessonsTxt(Math.abs(st.bal)), rub(Math.abs(st.bal) * st.rate) + ' по ставке ' + rub(st.rate)]) + '/>';
+    });
+    return s + '</svg>';
+  }
+  function noNotesHtml(calOn) {
+    if (!calOn) return '<p class="gnote">Появится, когда подключён Google.</p>';
+    var since = L.addDays(todayISO(), -30), items = [];
+    S.students.forEach(function (st) {
+      var notes = L.notesFor(st, G.notes);
+      st.h.forEach(function (e) { if (e.t === 'lesson' && e.d >= since && !L.noteForEntry(e, notes)) items.push({ d: e.d, at: e.at, st: st }); });
+    });
+    items.sort(function (a, b) { return (a.at || a.d) < (b.at || b.d) ? 1 : -1; });
+    if (!items.length) return '<p class="gnote">У всех уроков за 30 дней есть конспект.</p>';
+    return '<ul class="lst">' + items.slice(0, 12).map(function (x) {
+      return '<li><span>' + esc(dShort(x.d) + (x.at ? ', ' + hhmm(x.at) : '')) + '</span><b>' + esc(x.st.name) + '</b></li>';
+    }).join('') + '</ul>' + (items.length > 12 ? '<p class="gnote">И ещё ' + (items.length - 12) + '.</p>' : '');
+  }
+
+  // ---------- посты ----------
+  var POST_ST = ['черновик', 'опубликован', 'отклонён'];
+  function renderPosts() {
+    var v = $('#v-posts'); if (!v || TAB !== 'posts') return;
+    var head = '<div class="phrow"><h2 class="ph">Черновики для Instagram</h2>' + (MODE === 'server' ? '<button class="tiny ghost" data-act="posts-refresh">Обновить</button>' : '') + '</div>' +
+      '<p class="gnote">Черновики пишет еженедельная задача по конспектам уроков. В них нет имён, оценок и личных подробностей учеников: только тема и факты. Публикуете вы сами.</p>';
+    if (MODE !== 'server') { v.innerHTML = head + '<p class="gnote">Посты работают в версии на сервере.</p>'; return; }
+    if (G.postsState === 'off' || G.state === 'off') { v.innerHTML = head + '<p class="gnote">Google не подключён: docs/google-setup.md.</p>'; return; }
+    if (G.postsState === 'error') { v.innerHTML = head + '<p class="gnote err">' + esc(G.postsErr) + '</p>'; return; }
+    if (!G.posts) { v.innerHTML = head + '<p class="gnote">Загружаю…</p>'; if (G.postsState !== 'loading') loadPosts(); return; }
+    if (!G.posts.length) { v.innerHTML = head + '<p class="gnote">Черновиков пока нет. Первые появятся после еженедельного запуска.</p>'; return; }
+    v.innerHTML = head + '<div class="posts">' + G.posts.map(function (p) {
+      var slides = String(p.slides || '').split(/\n\s*---\s*\n|\n{2,}/).map(function (x) { return x.trim(); }).filter(Boolean);
+      return '<article class="panel post" data-post="' + attr(p.id) + '"><header><h3>' + esc(p.title || 'Без заголовка') + '</h3><span class="pst" data-s="' + attr(p.status) + '">' + esc(p.status) + '</span></header>' +
+        '<div class="meta2">' + esc([p.week ? 'неделя ' + p.week : '', p.dates ? 'по урокам ' + p.dates : ''].filter(Boolean).join(' · ')) + '</div>' +
+        (slides.length ? '<ol class="slides">' + slides.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' : '') +
+        (p.caption ? '<div class="cap">' + esc(p.caption) + '</div>' : '') +
+        (p.hashtags ? '<div class="tags">' + esc(p.hashtags) + '</div>' : '') +
+        '<div class="hbtns"><button class="tiny" data-act="post-copy-cap">Скопировать подпись</button><button class="tiny" data-act="post-copy-slides">Скопировать слайды</button>' +
+        '<select data-act-change="post-status" aria-label="Статус">' + POST_ST.map(function (s) { return '<option' + (s === p.status ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></div></article>';
+    }).join('') + '</div>';
+  }
+  function postById(id) { return (G.posts || []).filter(function (p) { return p.id === id; })[0]; }
+
+  // ---------- мелочи ----------
+  function toast(msg) {
+    var old = document.getElementById('toast'); if (old) old.remove();
+    var t = document.createElement('div'); t.className = 'toast'; t.id = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
+    document.body.appendChild(t); setTimeout(function () { if (t.parentNode) t.remove(); }, 2600);
+  }
+  function copyText(s, okMsg) {
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = s; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast(okMsg); } catch (e) { toast('Не удалось скопировать'); }
+      ta.remove();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(s).then(function () { toast(okMsg); }, fallback);
+    else fallback();
+  }
+  function download(name, text) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+  }
+  var armedKey = null, armedT = null;
+  function needSecond(key, msg) {
+    if (armedKey === key) { clearTimeout(armedT); armedKey = null; return true; }
+    armedKey = key; toast(msg); clearTimeout(armedT); armedT = setTimeout(function () { armedKey = null; }, 4500);
+    return false;
+  }
+  function showTip(el, x, y) {
+    var tip = $('#tip'); if (!tip) return;
+    var lines = String(el.getAttribute('data-tip') || '').split('\n');
+    tip.innerHTML = '<b>' + esc(lines[0]) + '</b>' + lines.slice(1).map(function (l) { return '<br>' + esc(l); }).join('');
+    tip.hidden = false;
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    var left = Math.min(window.innerWidth - w - 8, x + 14), top = y + 14;
+    if (top + h > window.innerHeight - 8) top = y - h - 10;
+    tip.style.left = Math.max(8, left) + 'px'; tip.style.top = Math.max(8, top) + 'px';
+  }
+  function hideTip() { var tip = $('#tip'); if (tip) tip.hidden = true; }
+
+  // ---------- резервные копии на сервере ----------
+  function loadDays() {
+    var sel = $('#daySel'); if (!sel) return;
+    if (MODE !== 'server') { sel.innerHTML = '<option value="">только в версии на сервере</option>'; return; }
+    fetch('/api/backup', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      if (!j) { sel.innerHTML = '<option value="">список недоступен</option>'; return; }
+      sel.innerHTML = j.days.length ? j.days.map(function (d) { return '<option value="' + attr(d) + '">' + esc(dayLabel(d)) + '</option>'; }).join('') : '<option value="">копий пока нет</option>';
+      if (j.drive && j.drive.last) G.drive = j.drive.last;
+      renderSettings();
+    }).catch(function () { sel.innerHTML = '<option value="">список недоступен</option>'; });
+  }
+  function fetchDay(d) {
+    return fetch('/api/backup?date=' + encodeURIComponent(d), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; });
+  }
+
+  // ---------- импорт файла и вставки ----------
+  function loadSnapshot(input) {
+    var d = norm(input, true);
+    if (!d || !d.students.length) return null;
+    try { localStorage.setItem('uroki.beforeImport', JSON.stringify(snapshot())); } catch (e) { /* не страшно */ }
+    commit(function () { S = d; });
+    return d.students.length;
+  }
+  function importFile(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      var n = loadSnapshot(String(reader.result));
+      toast(n ? ('Загружено учеников: ' + n) : 'В файле не нашлось учеников');
+    };
+    reader.onerror = function () { toast('Файл не читается'); };
+    reader.readAsText(file);
+  }
+
+  // ---------- события ----------
+  function rowSt(el) { var r = el.closest('.row'); return r ? stById(r.dataset.id) : null; }
+  function evSt(el) {
+    var r = el.closest('.evr');
+    return r ? { ev: evByKey(r.dataset.ev), st: r.dataset.sid ? stById(r.dataset.sid) : null } : { ev: null, st: null };
+  }
+  function setTab(t) {
+    TAB = t;
+    $$('.tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'); });
+    ['main', 'dash', 'posts'].forEach(function (k) { var v = $('#v-' + k); if (v) v.hidden = k !== t; });
+    try { localStorage.setItem('uroki.tab', t); } catch (e) { /* не страшно */ }
+    renderAll();
+  }
+  function onClick(e) {
+    var b = e.target.closest ? e.target.closest('button[data-act],button[data-tab]') : null;
+    if (!b) return;
+    if (b.dataset.tab) { setTab(b.dataset.tab); return; }
+    var act = b.dataset.act, st = rowSt(b);
+    if (act === 'm-prev') { mOff--; renderMonth(); return; }
+    if (act === 'm-next') { if (mOff < 0) { mOff++; renderMonth(); } return; }
+    if (act === 'add') { addStudent(); return; }
+    if (act === 'day') { openDay(); return; }
+    if (act === 'export') { download('uroki-' + todayISO() + '.json', JSON.stringify(snapshot(), null, 2)); toast('Копия скачана'); return; }
+    if (act === 'restore') { restoreLocal(); return; }
+    if (act === 'import') { var fi = $('#importFile'); if (fi) fi.click(); return; }
+    if (act === 'paste') {
+      var box = $('#pasteBox'), pe = $('#pasteErr');
+      if (box) box.value = ''; if (pe) pe.hidden = true;
+      $('#dlgPaste').showModal(); if (box) setTimeout(function () { box.focus(); }, 50);
+      return;
+    }
+    if (act === 'paste-ok') {
+      var n = loadSnapshot($('#pasteBox').value || '');
+      if (!n) { var pe2 = $('#pasteErr'); pe2.textContent = 'Не получилось разобрать. Нужен объект со списком students или просто массив учеников.'; pe2.hidden = false; return; }
+      $('#dlgPaste').close(); toast('Загружено учеников: ' + n); return;
+    }
+    if (act === 'logout') { logout(); return; }
+    if (act === 'close') { var dg = b.closest('dialog'); if (dg) dg.close(); return; }
+    if (act === 'copy-due') { var r = stById(b.dataset.sid); if (r) copyText(msgFor(r), 'Текст скопирован'); return; }
+    if (act === 'pay-ok') {
+      var ps = stById(curSid); if (!ps) return;
+      var cnt = Math.round(num($('#payN').value)), sum = Math.round(num($('#payS').value));
+      if (!cnt) { toast('Укажите количество уроков'); return; }
+      var dt = $('#payD').value || todayISO(), cm = ($('#payC').value || '').trim();
+      commit(function () { doPay(ps, cnt, sum, dt, cm); });
+      $('#dlgPay').close(); toast('Оплата записана'); return;
+    }
+    if (act === 'cx-free' || act === 'cx-charge') {
+      var cs = stById(curSid); if (!cs) return;
+      var dt3 = $('#cxD').value || todayISO(), k = act === 'cx-charge' ? 'cancel-charged' : 'cancel-free', ev3 = curEv;
+      commit(function () { doOp(cs, k, dt3, ev3); });
+      curEv = null;
+      $('#dlgCancel').close(); toast(act === 'cx-charge' ? 'Урок списан' : 'Урок сохранён'); return;
+    }
+    if (act === 'd-lesson' || act === 'd-charge' || act === 'd-free') {
+      var dr = b.closest('.dayrow'); if (!dr) return;
+      var ds = stById(dr.dataset.sid); if (!ds) return;
+      var kind = act === 'd-lesson' ? 'lesson' : (act === 'd-charge' ? 'cancel-charged' : 'cancel-free');
+      var dd = $('#dayD').value || todayISO();
+      commit(function () { doOp(ds, kind, dd); });
+      $('.db', dr).textContent = fmt(ds.bal);
+      $('.done', dr).textContent = kind === 'lesson' ? 'провёл ✓' : (kind === 'cancel-charged' ? 'списано ✓' : 'отмена ✓');
+      return;
+    }
+    if (act === 'ev-lesson' || act === 'ev-cancel' || act === 'ev-skip' || act === 'ev-unskip') {
+      var x = evSt(b); if (!x.ev || !x.st) return;
+      var key = x.ev.key + '|' + x.st.id;
+      if (act === 'ev-lesson') { commit(function () { doOp(x.st, 'lesson', L.localDate(x.ev.start), x.ev); }); toast('Занятие записано'); }
+      else if (act === 'ev-cancel') openCancel(x.st, x.ev);
+      else if (act === 'ev-skip') { commit(function () { S.dismissed[key] = 1; }); toast('Отмечено: урока не было'); }
+      else commit(function () { delete S.dismissed[key]; });
+      return;
+    }
+    if (act === 'link') { var xl = evSt(b); if (xl.ev) openLink(xl.ev); return; }
+    if (act === 'link-ok') { saveLink(); return; }
+    if (act === 'g-refresh') { loadGoogle(); return; }
+    if (act === 'cal-import') { openImport(); return; }
+    if (act === 'imp-find') { findImport(); return; }
+    if (act === 'imp-ok') { applyImportNow(); return; }
+    if (act === 'day-restore' || act === 'day-download') {
+      var d = ($('#daySel') || {}).value;
+      if (!d) { toast('Выберите дату'); return; }
+      if (act === 'day-restore' && !needSecond('day-restore', 'Заменить текущие данные копией за ' + dShort(d) + '? Нажмите ещё раз')) return;
+      fetchDay(d).then(function (j) {
+        if (!j || !j.state) { toast('Копия не найдена'); return; }
+        if (act === 'day-download') { download('uroki-' + d + '.json', JSON.stringify(j.state, null, 2)); return; }
+        var ns = norm(j.state);
+        if (!ns) { toast('Копия повреждена'); return; }
+        try { localStorage.setItem('uroki.beforeImport', JSON.stringify(snapshot())); } catch (e2) { /* не страшно */ }
+        commit(function () { S = ns; });
+        toast('Восстановлено состояние за ' + dShort(d));
+      }).catch(function () { toast('Сервер не отвечает'); });
+      return;
+    }
+    if (act === 'posts-refresh') { G.posts = null; G.postsState = ''; loadPosts(); return; }
+    if (act === 'post-copy-cap' || act === 'post-copy-slides') {
+      var p = postById(b.closest('[data-post]').dataset.post); if (!p) return;
+      if (act === 'post-copy-cap') copyText(String(p.caption || '') + (p.hashtags ? '\n\n' + p.hashtags : ''), 'Подпись скопирована');
+      else copyText(String(p.slides || ''), 'Слайды скопированы');
+      return;
+    }
+    if (act === 'hist-all') { if (st) { histAll[st.id] = 1; renderRows(); } return; }
+    if (!st) return;
+    if (act === 'lesson') { commit(function () { doOp(st, 'lesson', todayISO()); }); toast('Занятие записано'); return; }
+    if (act === 'cancel') { openCancel(st, null); return; }
+    if (act === 'pay') { openPay(st); return; }
+    if (act === 'copy') { copyText(msgFor(st), 'Текст скопирован'); return; }
+    if (act === 'undo') {
+      if (!needSecond('undo:' + st.id, 'Отменить последнюю запись? Нажмите ещё раз')) return;
+      commit(function () { if (!doUndo(st)) toast('История пуста'); });
+      return;
+    }
+    if (act === 'arch') { commit(function () { st.arch = st.arch === '1' ? '0' : '1'; }); return; }
+    if (act === 'del') {
+      if (!needSecond('del:' + st.id, 'Удалить ученика и всю историю? Нажмите ещё раз')) return;
+      commit(function () { S.students = S.students.filter(function (x) { return x.id !== st.id; }); });
+      toast('Ученик удалён');
+    }
+  }
+  function addStudent() {
+    var id = newId();
+    commit(function () {
+      S.students.push({ id: id, arch: '0', name: '', rate: Math.round(num(S.defRate)) || 2000, contact: '', note: '', bal: 0, emails: [], since: todayISO(), h: [] });
+    });
+    var row = $('#rows .row[data-id="' + id + '"]');
+    if (row) { var n = $('.name', row); n.focus(); row.scrollIntoView({ block: 'center' }); }
+  }
+  function restoreLocal() {
+    var raw = null; try { raw = localStorage.getItem('uroki.backup'); } catch (e) { /* нет доступа */ }
+    if (!raw) { toast('Копии на этом устройстве нет'); return; }
+    if (!needSecond('restore', 'Это заменит текущие данные. Нажмите ещё раз')) return;
+    var d = norm(raw);
+    if (!d) { toast('Копия повреждена'); return; }
+    commit(function () { S = d; });
+    toast('Данные восстановлены');
+  }
+  // Правка полей прямо в карточке: сохраняем, когда поле теряет фокус.
+  function onFocusOut(e) {
+    var t = e.target; if (!t || !t.classList) return;
+    var changed = false;
+    if (t.id === 'tplLow' || t.id === 'tplDebt') {
+      var k = t.id, v = t.textContent || '';
+      if (S[k] !== v) { S[k] = v; changed = true; }
+    } else {
+      var st = rowSt(t); if (!st) return;
+      if (t.classList.contains('name')) { var nm = (t.textContent || '').replace(/\s+/g, ' ').trim(); if (nm !== st.name) { st.name = nm; changed = true; } }
+      else if (t.classList.contains('rate')) { var r = Math.round(num(t.textContent)); r = r > 0 ? r : 0; if (r !== st.rate) { st.rate = r; } changed = true; }
+      else if (t.classList.contains('contact')) { var c = (t.textContent || '').trim(); if (c !== st.contact) { st.contact = c; changed = true; } }
+      else if (t.classList.contains('snote')) { var no = t.textContent || ''; if (no !== st.note) { st.note = no; changed = true; } }
+      else if (t.classList.contains('emails')) {
+        var em = String(t.textContent || '').split(/[,;\s]+/).map(L.cleanEmail).filter(Boolean);
+        em = em.filter(function (x, i) { return em.indexOf(x) === i; });
+        if (em.join(',') !== (st.emails || []).join(',')) { st.emails = em; changed = true; }
+      } else if (t.classList.contains('h-note')) {
+        var h = t.closest('.h'), en = h ? st.h[+h.dataset.i] : null;
+        if (en && en.note !== (t.textContent || '')) { en.note = t.textContent || ''; changed = true; }
+      }
+    }
+    if (changed) setTimeout(after, 0);
+  }
+  function bind() {
+    document.addEventListener('click', onClick);
+    document.addEventListener('focusout', onFocusOut);
+    document.addEventListener('toggle', function (e) {
+      var t = e.target;
+      if (t.classList && t.classList.contains('hist')) { if (t.open) openHist[t.dataset.sid] = 1; else delete openHist[t.dataset.sid]; }
+      if (t.classList && t.classList.contains('nt') && t.dataset.k) { if (t.open) openNotes[t.dataset.k] = 1; else delete openNotes[t.dataset.k]; }
+      if (t.id === 'settings' && t.open) loadDays();
+    }, true);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && e.target.matches && e.target.matches('.name,.rate,.contact,.h-note,.emails')) { e.preventDefault(); e.target.blur(); }
+      if (e.key === 'Escape') hideTip();
+    });
+    document.addEventListener('paste', function (e) {
+      var t = e.target; if (!t || !t.isContentEditable) return;
+      var cd = e.clipboardData || window.clipboardData; if (!cd) return;
+      e.preventDefault();
+      var txt = cd.getData('text') || '';
+      if (!t.classList.contains('tpl') && !t.classList.contains('snote')) txt = txt.replace(/\s+/g, ' ').trim();
+      document.execCommand('insertText', false, txt);
+    });
+    document.addEventListener('change', function (e) {
+      var t = e.target;
+      if (t.id === 'arch') { $('#rows').dataset.localArch = t.checked ? '1' : '0'; return; }
+      if (t.id === 'thr') { commit(function () { S.thr = String(Math.max(0, Math.round(num(t.value)))); }); return; }
+      if (t.id === 'defRate') { commit(function () { S.defRate = String(Math.round(num(t.value)) || 2000); }); return; }
+      if (t.id === 'calWords') { var w = t.value.trim(); if (w && w !== S.calWords) { commit(function () { S.calWords = w; }); loadGoogle(); } return; }
+      if (t.id === 'payN') { syncPaySum(); return; }
+      if (t.id === 'dayD') { renderDayCal(); return; }
+      if (t.id === 'importFile') { if (t.files && t.files[0]) importFile(t.files[0]); t.value = ''; return; }
+      if (t.dataset && t.dataset.imp) { onImportInput(t); return; }
+      if (t.dataset && t.dataset.link === 'sel') { var f = t.closest('.field'); $('[data-link="new"]', f).hidden = t.value !== 'new'; return; }
+      if (t.dataset && t.dataset.actChange === 'post-status') {
+        var card = t.closest('[data-post]'), p = postById(card.dataset.post), val = t.value;
+        gpost({ action: 'post-status', id: p.id, status: val }).then(function (res) {
+          if (res.status === 200) { p.status = val; renderPosts(); toast('Статус сохранён'); }
+          else { toast(gErr(res.j)); renderPosts(); }
+        });
+      }
+    });
+    document.addEventListener('input', function (e) {
+      var t = e.target;
+      if (t.id === 'payN') {
+        syncPaySum();
+        $$('#packs button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.n === String(Math.round(num($('#payN').value))) ? 'true' : 'false'); });
+      }
+      if (t.dataset && (t.dataset.imp === 'name' || t.dataset.imp === 'rate')) onImportInput(t);
+    });
+    document.addEventListener('mouseover', function (e) { var el = e.target.closest && e.target.closest('[data-tip]'); if (el) showTip(el, e.clientX, e.clientY); });
+    document.addEventListener('mousemove', function (e) { var el = e.target.closest && e.target.closest('[data-tip]'); if (el) showTip(el, e.clientX, e.clientY); else hideTip(); });
+    document.addEventListener('focusin', function (e) { var el = e.target.closest && e.target.closest('[data-tip]'); if (el) { var r = el.getBoundingClientRect(); showTip(el, r.left + r.width / 2, r.top + 10); } else hideTip(); });
+    var rz = null;
+    window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (TAB === 'dash') renderDash(); }, 150); });
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') renderAll(); });
+    window.addEventListener('beforeunload', function () {
+      if (MODE === 'server' && dirty && navigator.sendBeacon) {
+        try { navigator.sendBeacon('/api/state', new Blob([JSON.stringify(snapshot())], { type: 'application/json' })); } catch (e) { /* поздно */ }
+      }
+    });
+    var gf = $('#gateForm');
+    if (gf) gf.addEventListener('submit', function (e) { e.preventDefault(); var pw = $('#gatePw'); login(pw ? pw.value : ''); });
+    var packs = $('#packs');
+    if (packs) packs.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-n]'); if (!b) return;
+      $('#payN').value = b.dataset.n; syncPaySum();
+      $$('#packs button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    });
+    setInterval(function () {
+      if (document.visibilityState === 'visible' && MODE === 'server' && G.state !== 'off') loadGoogle();
+    }, 15 * 60e3);
+  }
+
+  // ---------- запуск ----------
+  function loadLocal() {
+    var raw = null; try { raw = localStorage.getItem('uroki.backup'); } catch (e) { /* нет доступа */ }
+    if (!raw) return false;
+    var d = norm(raw);
+    if (!d || !d.students.length) return false;
+    S = d;
+    return true;
+  }
+  function showGate(msg) {
+    var g = $('#gate'); if (!g) return;
+    g.hidden = false;
+    var e = $('#gateErr'); if (e) { e.textContent = msg || ''; e.hidden = !msg; }
+    var f = $('#gatePw'); if (f) { f.value = ''; setTimeout(function () { f.focus(); }, 50); }
+  }
+  function hideGate() { var g = $('#gate'); if (g) g.hidden = true; }
+  function startServer() {
+    if (location.protocol === 'file:') { goLocal(); return Promise.resolve(); }
+    setChip('checking');
+    return fetch('/api/state', { cache: 'no-store' })
+      .then(function (r) {
+        if (r.status === 401) { MODE = 'server'; setChip('locked'); showGate(''); return null; }
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (j) {
+        if (j === null) return;
+        MODE = 'server'; hideGate();
+        var needsPw = !!(j && j.auth && j.auth.required);
+        var btn = $('[data-act="logout"]'); if (btn) btn.hidden = !needsPw;
+        var warn = $('#openWarn'); if (warn) warn.hidden = needsPw;
+        var d = j && j.state ? norm(j.state) : null;
+        if (d) {
+          S = d; renderAll(); backupLocal(); setChip('server');
+        } else {
+          // Хранилище пустое: заливаем то, что есть на руках, как начальное состояние.
+          loadLocal(); renderAll(); backupLocal(); setChip('server'); dirty = true; flush();
+        }
+        loadCachedG();
+        renderAll();
+        loadGoogle();
+      })
+      .catch(function (e) { console.warn('storage', e); goLocal(); });
+  }
+  function login(pw) {
+    return fetch('/api/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) })
+      .then(function (r) {
+        if (r.ok) return startServer();
+        if (r.status === 429) { showGate('Слишком много попыток. Подождите 15 минут.'); return; }
+        if (r.status === 400) { showGate('Пароль на сервере не задан. Добавьте APP_PASSWORD в настройках проекта.'); return; }
+        showGate('Пароль не подошёл');
+      })
+      .catch(function () { showGate('Сервер не отвечает'); });
+  }
+  function logout() {
+    if (!needSecond('logout', 'Выйти из аккаунта? Нажмите ещё раз')) return;
+    try { localStorage.removeItem('uroki.g'); } catch (e) { /* не страшно */ }
+    fetch('/api/session', { method: 'DELETE', cache: 'no-store' })
+      .then(function () { return null; }, function () { return null; })
+      .then(function () { location.replace(location.pathname + '?logout=' + Date.now()); });
+  }
+  function goLocal() {
+    MODE = 'local'; setChip('local');
+    loadLocal();
+    renderAll(); backupLocal();
+  }
+  function init() {
+    var saved = null; try { saved = localStorage.getItem('uroki.tab'); } catch (e) { /* нет доступа */ }
+    if (saved === 'dash' || saved === 'posts') setTab(saved); else renderAll();
+    startServer();
+  }
+  if (!window.__urokiBound) { window.__urokiBound = true; bind(); }
+  init();
 })();
+
 </script>
 
 </body>

@@ -22,40 +22,40 @@ const {chromium}=require('playwright');
   const ok=(n,got,exp)=>{const p=norm(got)===norm(exp);if(!p)failed++;
     console.log((p?'PASS':'FAIL')+'  '+n+'  got='+JSON.stringify(got)+(p?'':' exp='+JSON.stringify(exp)));};
 
-  ok('start Светлана bal',await bal('s1'),'6');
-  ok('start Светлана ₽',await money('s1'),'12 000 ₽');
-  ok('start Светлана state',await state('s1'),'ok');
-  ok('start Иван state',await state('s2'),'ok');
-  ok('start Алёна ₽',await money('s4'),'0 ₽');
-  ok('start Геннадий bal',await bal('s5'),'−5');
-  ok('start Геннадий ₽',await money('s5'),'−10 000 ₽');
-  ok('start Геннадий state',await state('s5'),'debt');
+  ok('start Анна bal',await bal('s1'),'6');
+  ok('start Анна ₽',await money('s1'),'12 000 ₽');
+  ok('start Анна state',await state('s1'),'ok');
+  ok('start Борис state',await state('s2'),'ok');
+  ok('start Марк ₽',await money('s4'),'0 ₽');
+  ok('start Нина bal',await bal('s5'),'−5');
+  ok('start Нина ₽',await money('s5'),'−10 000 ₽');
+  ok('start Нина state',await state('s5'),'debt');
 
-  // due block: Елена, Алёна, Геннадий (bal<=2)
+  // due block: Дарья, Марк, Нина (bal<=2)
   ok('due count',await p.$$eval('#due li',n=>n.length),3);
 
-  // Провёл x4 on Светлана: 6 -> 2 -> low
+  // Провёл x4 on Анна: 6 -> 2 -> low
   for(let i=0;i<4;i++){ await p.click('.row[data-id="s1"] button[data-act="lesson"]'); await p.waitForTimeout(60); }
-  ok('Светлана after 4 lessons',await bal('s1'),'2');
-  ok('Светлана state low',await state('s1'),'low');
-  ok('Светлана ₽',await money('s1'),'4 000 ₽');
+  ok('Анна after 4 lessons',await bal('s1'),'2');
+  ok('Анна state low',await state('s1'),'low');
+  ok('Анна ₽',await money('s1'),'4 000 ₽');
   ok('due now 4',await p.$$eval('#due li',n=>n.length),4);
-  ok('history rows Светлана',await p.$$eval('.row[data-id="s1"] .h',n=>n.length),5);
+  ok('history rows Анна',await p.$$eval('.row[data-id="s1"] .h',n=>n.length),5);
 
-  // Отмена без списания на Иване
+  // Отмена без списания на Борисе
   await p.click('.row[data-id="s2"] button[data-act="cancel"]');
   await p.waitForTimeout(150);
   await p.click('#dlgCancel button[data-act="cx-free"]');
   await p.waitForTimeout(150);
-  ok('Иван free cancel keeps 4',await bal('s2'),'4');
+  ok('Борис free cancel keeps 4',await bal('s2'),'4');
   // Отмена со списанием
   await p.click('.row[data-id="s2"] button[data-act="cancel"]');
   await p.waitForTimeout(150);
   await p.click('#dlgCancel button[data-act="cx-charge"]');
   await p.waitForTimeout(150);
-  ok('Иван charged cancel -> 3',await bal('s2'),'3');
+  ok('Борис charged cancel -> 3',await bal('s2'),'3');
 
-  // Оплата 10 уроков Геннадию: -5 -> 5, сумма 20000
+  // Оплата 10 уроков Нине: -5 -> 5, сумма 20000
   await p.click('.row[data-id="s5"] button[data-act="pay"]');
   await p.waitForTimeout(150);
   await p.click('#packs button[data-n="10"]');
@@ -63,20 +63,20 @@ const {chromium}=require('playwright');
   ok('pay sum autofill 10x2000',await p.$eval('#payS',e=>e.value),'20000');
   await p.click('#dlgPay button[data-act="pay-ok"]');
   await p.waitForTimeout(200);
-  ok('Геннадий after pay 10',await bal('s5'),'5');
-  ok('Геннадий state ok',await state('s5'),'ok');
-  ok('Геннадий ₽',await money('s5'),'10 000 ₽');
+  ok('Нина after pay 10',await bal('s5'),'5');
+  ok('Нина state ok',await state('s5'),'ok');
+  ok('Нина ₽',await money('s5'),'10 000 ₽');
 
-  // Алёна: ставка 950, оплата 4
+  // Марк: ставка 950, оплата 4
   await p.click('.row[data-id="s4"] button[data-act="pay"]');
   await p.waitForTimeout(150);
   await p.click('#packs button[data-n="4"]');
   await p.waitForTimeout(60);
-  ok('Алёна pay sum 4x950',await p.$eval('#payS',e=>e.value),'3800');
+  ok('Марк pay sum 4x950',await p.$eval('#payS',e=>e.value),'3800');
   await p.click('#dlgPay button[data-act="pay-ok"]');
   await p.waitForTimeout(200);
-  ok('Алёна bal 4',await bal('s4'),'4');
-  ok('Алёна ₽',await money('s4'),'3 800 ₽');
+  ok('Марк bal 4',await bal('s4'),'4');
+  ok('Марк ₽',await money('s4'),'3 800 ₽');
 
   // месяц: получено 20000+3800, уроков 4, отмен 1/1
   const mstats=await p.$$eval('#month .mstat b',n=>n.map(x=>x.textContent));
@@ -89,18 +89,18 @@ const {chromium}=require('playwright');
   await p.click('.row[data-id="s4"] .hist summary'); await p.waitForTimeout(80);
   await p.click('.row[data-id="s4"] button[data-act="undo"]'); await p.waitForTimeout(80);
   await p.click('.row[data-id="s4"] button[data-act="undo"]'); await p.waitForTimeout(200);
-  ok('Алёна after undo pay',await bal('s4'),'0');
+  ok('Марк after undo pay',await bal('s4'),'0');
 
-  // rate edit: Иван 2000 -> 1900
+  // rate edit: Борис 2000 -> 1900
   await p.$eval('.row[data-id="s2"] .rate',e=>{e.textContent='1900';});
   await p.$eval('.row[data-id="s2"] .rate',e=>e.dispatchEvent(new FocusEvent('focusout',{bubbles:true})));
   await p.waitForTimeout(200);
-  ok('Иван new ₽ 3x1900',await money('s2'),'5 700 ₽');
+  ok('Борис new ₽ 3x1900',await money('s2'),'5 700 ₽');
 
   // threshold 3
   await p.$eval('#thr',e=>{e.value='3';e.dispatchEvent(new Event('change',{bubbles:true}));});
   await p.waitForTimeout(200);
-  ok('Иван bal 3 -> low',await state('s2'),'low');
+  ok('Борис bal 3 -> low',await state('s2'),'low');
 
   // add student
   await p.click('button[data-act="add"]'); await p.waitForTimeout(250);
@@ -110,7 +110,7 @@ const {chromium}=require('playwright');
   await p.click('button[data-act="day"]'); await p.waitForTimeout(200);
   ok('day list rows',await p.$$eval('#dayList .dayrow',n=>n.length),6);
   await p.click('#dayList .dayrow[data-sid="s1"] button[data-act="d-lesson"]'); await p.waitForTimeout(200);
-  ok('Светлана via day mode 2->1',await bal('s1'),'1');
+  ok('Анна via day mode 2->1',await bal('s1'),'1');
   await p.click('#dlgDay button[data-act="close"]'); await p.waitForTimeout(120);
 
   // reminder text

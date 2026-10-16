@@ -2,5 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "node build.js",
   "outputDirectory": "public",
-  "installCommand": "echo 'сборке зависимости не нужны'"
+  "installCommand": "echo 'сборке зависимости не нужны'",
+  "functions": {
+    "api/google.js": { "maxDuration": 30 },
+    "api/backup.js": { "maxDuration": 30 }
+  }
 }

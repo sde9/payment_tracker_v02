@@ -42,7 +42,6 @@ body{
   font-family:"Golos Text","Segoe UI",Roboto,system-ui,sans-serif;
   font-size:15px; line-height:1.5; -webkit-text-size-adjust:100%;
 }
-artifact-local{display:contents}
 .wrap{max-width:920px; margin:0 auto; padding:28px 18px 80px; display:flex; flex-direction:column; gap:18px}
 
 /* header */
@@ -215,6 +214,151 @@ textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:v
   .lhead{display:none}
   .mstats{margin-left:0; gap:16px}
 }
+
+/* ---------- вкладки ---------- */
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+.tabs button{border:0; border-radius:0; background:transparent; color:var(--ink-2); padding:9px 13px 8px;
+  border-bottom:2px solid transparent; margin-bottom:-1px; font-weight:500}
+.tabs button:hover{background:transparent; color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--accent)}
+.view{display:flex; flex-direction:column; gap:18px}
+.view[hidden]{display:none}
+.ph{margin:0; font-size:12px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3); font-weight:600}
+.phrow{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+
+/* ---------- расписание и неотмеченные ---------- */
+.sched{padding:13px 16px 8px; display:flex; flex-direction:column; gap:8px}
+.sched[hidden]{display:none}
+.dayg{display:flex; flex-direction:column}
+.dayg>.dl{font-size:12.5px; color:var(--ink-2); font-weight:600; padding:8px 0 4px}
+.evr{display:grid; grid-template-columns:50px minmax(0,1fr) auto; gap:2px 12px; align-items:center; padding:7px 0; border-top:1px solid var(--line)}
+.evr.cont{border-top:0; padding-top:0}
+.evr .tm{font-variant-numeric:tabular-nums; color:var(--ink-2); font-size:13.5px}
+.evr .ew{min-width:0; font-size:14.5px; line-height:1.35}
+.evr .ew b{font-family:"Literata",Georgia,serif; font-weight:600}
+.evr .ew small{display:block; color:var(--ink-3); font-size:12px}
+.evr .ea{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; align-items:center}
+.mark{font-size:12.5px; color:var(--ok); white-space:nowrap}
+.mark.free{color:var(--ink-3)}
+.mark.bad{color:var(--bad)}
+.unm{border-color:var(--warn); background:var(--warn-soft)}
+.unm .ph{color:var(--warn)}
+.unm .evr{border-top-color:color-mix(in srgb, var(--warn) 25%, transparent)}
+.gnote{margin:0; font-size:13px; color:var(--ink-3)}
+.gnote.err{color:var(--bad)}
+
+/* ---------- карточка ученика: календарь и конспекты ---------- */
+.nx{font-size:12.5px; color:var(--ink-2)}
+.nx:empty{display:none}
+.fld{display:flex; flex-direction:column; gap:3px}
+.fld>.lbl{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3)}
+.fld .ed{font-size:13px; color:var(--ink-2); outline:none; border-bottom:1px dashed var(--line-2); padding:2px 0; overflow-wrap:anywhere}
+.fld .ed:focus{border-bottom-color:var(--accent); color:var(--ink)}
+.lastnotes{display:flex; flex-direction:column; gap:6px}
+.lastnotes:empty{display:none}
+.nt{border:1px solid var(--line); border-radius:8px; background:var(--surface-2)}
+.nt>summary{cursor:pointer; list-style:none; padding:7px 10px; font-size:13px; color:var(--ink-2); display:flex; gap:8px; align-items:baseline}
+.nt>summary::-webkit-details-marker{display:none}
+.nt>summary::before{content:"▸"; font-size:10px; transition:transform .15s}
+.nt[open]>summary::before{transform:rotate(90deg)}
+.nt>summary b{color:var(--ink); font-weight:600}
+.h .nt{margin-top:5px; background:transparent}
+.h .nt>summary{padding:3px 8px; font-size:12px}
+.md{padding:2px 12px 10px; font-size:13.5px; line-height:1.55; color:var(--ink)}
+.md h4{margin:10px 0 3px; font-size:13.5px; font-weight:600}
+.md ul{margin:2px 0; padding-left:18px}
+.md li{margin:1px 0}
+.md li.cont{list-style:none; color:var(--ink-2)}
+.md p{margin:4px 0}
+.md a{color:var(--accent)}
+.h[data-src="cal"] .h-l{color:var(--ink-3)}
+.hmore{font-size:12.5px}
+
+/* ---------- обзор ---------- */
+.kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+.kpi{padding:12px 14px; display:flex; flex-direction:column; gap:2px}
+.kpi i{font-style:normal; font-size:12px; color:var(--ink-3)}
+.kpi b{font-size:24px; font-weight:600; letter-spacing:-.01em}
+.kpi small{font-size:12px; color:var(--ink-3)}
+.chart{padding:14px 16px; display:flex; flex-direction:column; gap:10px; position:relative}
+.chart h2{margin:0; font-size:15px; font-weight:600}
+.chart .sub2{margin:-6px 0 0; font-size:12.5px; color:var(--ink-3)}
+.legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-2)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.legend i{width:10px; height:10px; border-radius:3px; display:inline-block}
+.viz{--s1:#2a78d6; --s2:#eb6834; --pos:#2a78d6; --neg:#e34948; --grid:#e1e0d9; --axis:#c3c2b7; --muted:#898781}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .viz{--s1:#3987e5; --s2:#d95926; --pos:#3987e5; --neg:#e66767; --grid:#2c2c33; --axis:#3d3d4c; --muted:#8c8ea0}
+}
+:root[data-theme="dark"] .viz{--s1:#3987e5; --s2:#d95926; --pos:#3987e5; --neg:#e66767; --grid:#2c2c33; --axis:#3d3d4c; --muted:#8c8ea0}
+.viz svg{display:block; width:100%; height:auto; overflow:visible}
+.viz text{font:12px "Golos Text",system-ui,sans-serif; fill:var(--muted)}
+.viz text.lbl{fill:var(--ink-2)}
+.viz text.val{fill:var(--ink); font-weight:600}
+.viz .hit{fill:transparent; cursor:default}
+.viz .hit:hover, .viz .hit:focus{fill:color-mix(in srgb, var(--ink) 5%, transparent); outline:none}
+.tip{position:fixed; z-index:120; pointer-events:none; background:var(--surface); color:var(--ink); border:1px solid var(--line);
+  border-radius:8px; padding:7px 10px; font-size:12.5px; line-height:1.45; box-shadow:var(--shadow); max-width:260px}
+.tip[hidden]{display:none}
+.tip b{font-weight:600}
+.tview>summary{cursor:pointer; font-size:12.5px; color:var(--ink-3); list-style:none}
+.tview>summary::-webkit-details-marker{display:none}
+.tview table{border-collapse:collapse; width:100%; margin-top:8px; font-size:13px}
+.tview th,.tview td{padding:5px 8px; border-bottom:1px solid var(--line); text-align:right; font-variant-numeric:tabular-nums}
+.tview th:first-child,.tview td:first-child{text-align:left}
+.tview th{font-weight:600; color:var(--ink-2); font-size:12px}
+.lst{list-style:none; margin:0; padding:0; display:flex; flex-direction:column}
+.lst li{display:flex; gap:10px; padding:6px 0; border-top:1px solid var(--line); font-size:14px; align-items:baseline; flex-wrap:wrap}
+.lst li:first-child{border-top:0}
+.lst li span:first-child{color:var(--ink-3); font-variant-numeric:tabular-nums; min-width:92px; font-size:13px}
+.lst li em{font-style:normal; color:var(--ink-3); font-size:12.5px}
+.two-col{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+.pad{padding:14px 16px; display:flex; flex-direction:column; gap:10px}
+
+/* ---------- посты ---------- */
+.posts{display:flex; flex-direction:column; gap:14px}
+.post{padding:14px 16px; display:flex; flex-direction:column; gap:10px}
+.post header{display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.post h3{margin:0; font-family:"Literata",Georgia,serif; font-weight:600; font-size:17px}
+.post .meta2{font-size:12.5px; color:var(--ink-3)}
+.slides{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:4px; font-size:14px}
+.cap{white-space:pre-wrap; font-size:14px; line-height:1.55; background:var(--surface-2); border-radius:8px; padding:10px 12px}
+.tags{font-size:13px; color:var(--accent)}
+.pst{font-size:11px; letter-spacing:.06em; text-transform:uppercase; font-weight:600; padding:2px 8px; border-radius:999px; background:var(--surface-2); color:var(--ink-2)}
+.pst[data-s="опубликован"]{background:var(--ok-soft); color:var(--ok)}
+.pst[data-s="отклонён"]{background:var(--bad-soft); color:var(--bad)}
+select{font:inherit; color:var(--ink); background:var(--surface); border:1px solid var(--line-2); border-radius:7px; padding:6px 9px; max-width:100%}
+.hbtns select{font-size:12.5px; padding:4px 8px}
+
+/* ---------- импорт и привязка ---------- */
+dialog.wide{max-width:min(96vw,700px)}
+.dbody.scroll{max-height:62vh; overflow-y:auto}
+.people{display:flex; flex-direction:column; border-top:1px solid var(--line)}
+.person{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,220px); gap:6px 12px; padding:10px 0; border-bottom:1px solid var(--line); align-items:start}
+.person .pn{font-weight:600; font-size:14.5px; overflow-wrap:anywhere}
+.person .pm{font-size:12px; color:var(--ink-3); overflow-wrap:anywhere}
+.person .pc{display:flex; flex-direction:column; gap:6px}
+.person .pnew{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+.person .pnew[hidden]{display:none}
+.person .pnew input[type="text"]{width:150px}
+.person .pnew input[type="number"]{width:90px}
+.person .pev{grid-column:1 / -1}
+.person .pev>summary{cursor:pointer; font-size:12.5px; color:var(--ink-3); list-style:none}
+.person .pev>summary::-webkit-details-marker{display:none}
+.evlist{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:2px 10px; padding:6px 0 0; font-size:12.5px; color:var(--ink-2)}
+.evlist label{display:flex; gap:6px; align-items:center}
+.plan{font-size:13.5px; background:var(--accent-soft); border-radius:8px; padding:10px 12px; line-height:1.5}
+.plan b{font-weight:600}
+.chk{display:inline-flex; gap:6px; align-items:center; font-size:13px; color:var(--ink-2)}
+.status{font-size:13px; color:var(--ink-2); margin:0}
+.status.err{color:var(--bad)}
+
+@media (max-width:640px){
+  .two-col{grid-template-columns:1fr}
+  .person{grid-template-columns:1fr}
+  .evr{grid-template-columns:44px minmax(0,1fr)}
+  .evr .ea{grid-column:2; justify-content:flex-start}
+}
 </style>
 
 <div class="wrap">
@@ -224,218 +368,100 @@ textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:v
       <h1>Уроки и оплаты</h1>
       <p class="sub">Частные занятия английским · 45 минут · предоплата пакетами</p>
     </div>
-    <artifact-local><span class="chip" id="chip">проверяю сохранение…</span></artifact-local>
+    <span class="chip" id="chip">проверяю сохранение…</span>
   </header>
 
-  <artifact-local><section class="panel month" id="month"></section></artifact-local>
+  <nav class="tabs" role="tablist" aria-label="Разделы">
+    <button role="tab" id="tab-main" aria-selected="true" aria-controls="v-main" data-tab="main">Ученики</button>
+    <button role="tab" id="tab-dash" aria-selected="false" aria-controls="v-dash" data-tab="dash">Обзор</button>
+    <button role="tab" id="tab-posts" aria-selected="false" aria-controls="v-posts" data-tab="posts">Посты</button>
+  </nav>
 
-  <artifact-local><section class="panel due" id="due" hidden></section></artifact-local>
+  <div class="view" id="v-main" role="tabpanel" aria-labelledby="tab-main">
 
-  <artifact-local><p class="panel warnbar" id="openWarn" hidden>Страница открыта всем, кто знает адрес. Задайте переменную <b>APP_PASSWORD</b> в настройках проекта на Vercel и передеплойте.</p></artifact-local>
+    <section class="panel month" id="month"></section>
 
-  <div class="toolbar">
-    <button class="primary" data-act="add">+ Ученик</button>
-    <button data-act="day">Отметить день</button>
-    <artifact-local><label class="tgl"><input type="checkbox" id="arch"> показать архив</label></artifact-local>
+    <section class="panel due" id="due" hidden></section>
+
+    <section class="panel sched unm" id="unmarked" hidden></section>
+
+    <section class="panel sched" id="week" hidden></section>
+
+    <p class="panel warnbar" id="openWarn" hidden>Страница открыта всем, кто знает адрес. Задайте переменную <b>APP_PASSWORD</b> в настройках проекта на Vercel и передеплойте.</p>
+
+    <div class="toolbar">
+      <button class="primary" data-act="add">+ Ученик</button>
+      <button data-act="day">Отметить день</button>
+      <label class="tgl"><input type="checkbox" id="arch"> показать архив</label>
+    </div>
+
+    <section class="panel ledger">
+      <div class="lhead"><span>Ученик</span><span>Остаток</span><span>Действия</span></div>
+      <div class="rows" id="rows"></div>
+      <p class="empty">Пока никого нет. Нажмите «+ Ученик» или загрузите файл в настройках.</p>
+    </section>
+
+    <details class="panel settings" id="settings">
+      <summary>Настройки и резервные копии</summary>
+      <div class="sbody">
+        <div class="field">
+          <label for="thr">Напоминать, когда осталось уроков</label>
+          <input type="number" id="thr" value="2" min="0" max="20" step="1">
+        </div>
+        <div class="field">
+          <label>Текст, когда баланс заканчивается</label>
+          <div class="tpl" id="tplLow" contenteditable="plaintext-only"></div>
+        </div>
+        <div class="field">
+          <label>Текст, когда есть долг</label>
+          <div class="tpl" id="tplDebt" contenteditable="plaintext-only"></div>
+        </div>
+        <p class="hint">Подстановки: <b>{имя}</b>, <b>{остаток}</b> (например «2 занятия»), <b>{долг}</b> (например «3 занятия, 6 000 ₽»).</p>
+        <div class="field">
+          <label for="defRate">Ставка по умолчанию для новых учеников, ₽</label>
+          <input type="number" id="defRate" value="2000" min="0" step="50">
+        </div>
+
+        <div class="field">
+          <label for="calWords">Уроки в календаре: слова в названии события, через запятую</label>
+          <input type="text" id="calWords" value="по английскому, Silver Fern">
+        </div>
+        <p class="gnote" id="gStatus">Календарь и конспекты работают в версии на сервере.</p>
+        <div class="hbtns">
+          <button data-act="cal-import">Загрузить историю из календаря</button>
+          <button data-act="g-refresh">Обновить календарь и конспекты</button>
+        </div>
+
+        <div class="field">
+          <label for="daySel">Копии на сервере, по одной за день</label>
+          <div class="hbtns">
+            <select id="daySel" aria-label="Дата копии"><option value="">открыть настройки, чтобы загрузить список</option></select>
+            <button data-act="day-restore">Восстановить</button>
+            <button data-act="day-download">Скачать</button>
+          </div>
+        </div>
+        <p class="gnote" id="driveStatus"></p>
+        <div class="hbtns">
+          <button data-act="export">Скачать резервную копию</button>
+          <button data-act="import">Загрузить из файла</button>
+          <button data-act="paste">Вставить JSON</button>
+          <button data-act="restore">Восстановить с этого устройства</button>
+          <button data-act="logout" hidden>Выйти</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+        <p class="hint">Копия в браузере обновляется при каждом изменении. На сервере хранится последний снимок каждого дня за 35 дней, в Google Drive раз в день появляется файл.</p>
+      </div>
+    </details>
   </div>
 
-  <section class="panel ledger">
-    <div class="lhead"><span>Ученик</span><span>Остаток</span><span>Действия</span></div>
-    <div class="rows" id="rows">
+  <div class="view" id="v-dash" role="tabpanel" aria-labelledby="tab-dash" hidden></div>
 
-      <div class="row" data-id="s1" data-state="ok" data-arch="0">
-        <div class="who">
-          <span class="name" contenteditable="plaintext-only">Анна Петрова</span>
-          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-        </div>
-        <div class="bal"><span class="bal-n">6</span><span class="bal-m">12 000 ₽</span><span class="tag"></span></div>
-        <div class="acts">
-          <button class="tiny" data-act="lesson">Провёл</button>
-          <button class="tiny" data-act="cancel">Отмена</button>
-          <button class="tiny" data-act="pay">Оплата</button>
-          <button class="tiny ghost" data-act="copy">Текст</button>
-        </div>
-        <details class="hist"><summary>История</summary><div class="histbody">
-          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
-          <div class="hrows">
-            <div class="h" data-d="2026-08-20" data-t="init" data-delta="6" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">+6</span></div>
-          </div>
-          <div class="hbtns">
-            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-            <button class="tiny ghost" data-act="arch"></button>
-            <button class="tiny ghost" data-act="del">Удалить</button>
-          </div>
-        </div></details>
-      </div>
-
-      <div class="row" data-id="s2" data-state="ok" data-arch="0">
-        <div class="who">
-          <span class="name" contenteditable="plaintext-only">Борис Ковалёв</span>
-          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-        </div>
-        <div class="bal"><span class="bal-n">4</span><span class="bal-m">8 000 ₽</span><span class="tag"></span></div>
-        <div class="acts">
-          <button class="tiny" data-act="lesson">Провёл</button>
-          <button class="tiny" data-act="cancel">Отмена</button>
-          <button class="tiny" data-act="pay">Оплата</button>
-          <button class="tiny ghost" data-act="copy">Текст</button>
-        </div>
-        <details class="hist"><summary>История</summary><div class="histbody">
-          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
-          <div class="hrows">
-            <div class="h" data-d="2026-08-20" data-t="init" data-delta="4" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">+4</span></div>
-          </div>
-          <div class="hbtns">
-            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-            <button class="tiny ghost" data-act="arch"></button>
-            <button class="tiny ghost" data-act="del">Удалить</button>
-          </div>
-        </div></details>
-      </div>
-
-      <div class="row" data-id="s3" data-state="debt" data-arch="0">
-        <div class="who">
-          <span class="name" contenteditable="plaintext-only">Дарья Ильина</span>
-          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-        </div>
-        <div class="bal"><span class="bal-n">0</span><span class="bal-m">0 ₽</span><span class="tag"></span></div>
-        <div class="acts">
-          <button class="tiny" data-act="lesson">Провёл</button>
-          <button class="tiny" data-act="cancel">Отмена</button>
-          <button class="tiny" data-act="pay">Оплата</button>
-          <button class="tiny ghost" data-act="copy">Текст</button>
-        </div>
-        <details class="hist"><summary>История</summary><div class="histbody">
-          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
-          <div class="hrows">
-            <div class="h" data-d="2026-08-20" data-t="init" data-delta="0" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">0</span></div>
-          </div>
-          <div class="hbtns">
-            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-            <button class="tiny ghost" data-act="arch"></button>
-            <button class="tiny ghost" data-act="del">Удалить</button>
-          </div>
-        </div></details>
-      </div>
-
-      <div class="row" data-id="s4" data-state="debt" data-arch="0">
-        <div class="who">
-          <span class="name" contenteditable="plaintext-only">Марк Соловьёв</span>
-          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">950</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-        </div>
-        <div class="bal"><span class="bal-n">0</span><span class="bal-m">0 ₽</span><span class="tag"></span></div>
-        <div class="acts">
-          <button class="tiny" data-act="lesson">Провёл</button>
-          <button class="tiny" data-act="cancel">Отмена</button>
-          <button class="tiny" data-act="pay">Оплата</button>
-          <button class="tiny ghost" data-act="copy">Текст</button>
-        </div>
-        <details class="hist"><summary>История</summary><div class="histbody">
-          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике">Демо-данные. Свои загрузите через настройки.</div>
-          <div class="hrows">
-            <div class="h" data-d="2026-08-20" data-t="init" data-delta="0" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">0</span></div>
-          </div>
-          <div class="hbtns">
-            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-            <button class="tiny ghost" data-act="arch"></button>
-            <button class="tiny ghost" data-act="del">Удалить</button>
-          </div>
-        </div></details>
-      </div>
-
-      <div class="row" data-id="s5" data-state="debt" data-arch="0">
-        <div class="who">
-          <span class="name" contenteditable="plaintext-only">Нина Захарова</span>
-          <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-        </div>
-        <div class="bal"><span class="bal-n">−5</span><span class="bal-m">−10 000 ₽</span><span class="tag"></span></div>
-        <div class="acts">
-          <button class="tiny" data-act="lesson">Провёл</button>
-          <button class="tiny" data-act="cancel">Отмена</button>
-          <button class="tiny" data-act="pay">Оплата</button>
-          <button class="tiny ghost" data-act="copy">Текст</button>
-        </div>
-        <details class="hist"><summary>История</summary><div class="histbody">
-          <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике">Демо-данные: пример отрицательного баланса.</div>
-          <div class="hrows">
-            <div class="h" data-d="2026-08-20" data-t="init" data-delta="-5" data-amt="0"><span class="h-d">20 авг</span><span class="h-t"><span class="h-l">Стартовый остаток</span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n">−5</span></div>
-          </div>
-          <div class="hbtns">
-            <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-            <button class="tiny ghost" data-act="arch"></button>
-            <button class="tiny ghost" data-act="del">Удалить</button>
-          </div>
-        </div></details>
-      </div>
-
-    </div>
-    <p class="empty">Пока никого нет. Нажмите «+ Ученик» или загрузите файл в настройках.</p>
-  </section>
-
-  <details class="panel settings">
-    <summary>Настройки и резервная копия</summary>
-    <div class="sbody">
-      <div class="field">
-        <label for="thr">Напоминать, когда осталось уроков</label>
-        <input type="number" id="thr" value="2" min="0" max="20" step="1">
-      </div>
-      <div class="field">
-        <label>Текст, когда баланс заканчивается</label>
-        <div class="tpl" id="tplLow" contenteditable="plaintext-only">Привет, {имя}! У тебя осталось {остаток}. Скажи, какой пакет берём дальше: 4, 5 или 10?</div>
-      </div>
-      <div class="field">
-        <label>Текст, когда есть долг</label>
-        <div class="tpl" id="tplDebt" contenteditable="plaintext-only">Привет, {имя}! Оплаченные занятия закончились, сейчас за нами {долг}. Давай пополним баланс: 4, 5 или 10 занятий?</div>
-      </div>
-      <p class="hint">Подстановки: <b>{имя}</b>, <b>{остаток}</b> (например «2 занятия»), <b>{долг}</b> (например «3 занятия, 6 000 ₽»).</p>
-      <div class="field">
-        <label>Ставка по умолчанию для новых учеников, ₽</label>
-        <input type="number" id="defRate" value="2000" min="0" step="50">
-      </div>
-      <div class="hbtns">
-        <button data-act="export">Скачать резервную копию</button>
-        <button data-act="import">Загрузить из файла</button>
-        <button data-act="paste">Вставить JSON</button>
-        <button data-act="restore">Восстановить с этого устройства</button>
-        <button data-act="logout" hidden>Выйти</button>
-      </div>
-      <artifact-local><input type="file" id="importFile" accept="application/json,.json" hidden></artifact-local>
-      <p class="hint">Резервная копия сохраняется в браузере при каждом изменении. Кнопка «Скачать» отдаёт файл JSON.</p>
-    </div>
-  </details>
+  <div class="view" id="v-posts" role="tabpanel" aria-labelledby="tab-posts" hidden></div>
 
 </div>
 
-<template id="tpl-row">
-  <div class="row" data-id="" data-state="debt" data-arch="0">
-    <div class="who">
-      <span class="name" contenteditable="plaintext-only" data-ph="имя ученика"></span>
-      <span class="meta"><span class="ed rate" contenteditable="plaintext-only">2000</span><span class="u">₽ за урок</span><span class="u">·</span><span class="ed contact" contenteditable="plaintext-only" data-ph="контакт"></span></span>
-    </div>
-    <div class="bal"><span class="bal-n">0</span><span class="bal-m">0 ₽</span><span class="tag"></span></div>
-    <div class="acts">
-      <button class="tiny" data-act="lesson">Провёл</button>
-      <button class="tiny" data-act="cancel">Отмена</button>
-      <button class="tiny" data-act="pay">Оплата</button>
-      <button class="tiny ghost" data-act="copy">Текст</button>
-    </div>
-    <details class="hist"><summary>История</summary><div class="histbody">
-      <div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике"></div>
-      <div class="hrows"></div>
-      <div class="hbtns">
-        <button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>
-        <button class="tiny ghost" data-act="arch"></button>
-        <button class="tiny ghost" data-act="del">Удалить</button>
-      </div>
-    </div></details>
-  </div>
-</template>
+<div class="tip" id="tip" role="status" hidden></div>
 
-<template id="tpl-h">
-  <div class="h" data-d="" data-t="" data-delta="" data-amt="0"><span class="h-d"></span><span class="h-t"><span class="h-l"></span><span class="h-note" contenteditable="plaintext-only" data-ph="заметка"></span></span><span class="h-n"></span></div>
-</template>
-
-<artifact-local>
 <div class="gate" id="gate" hidden>
   <form class="gatebox" id="gateForm">
     <h2>Уроки и оплаты</h2>
@@ -445,6 +471,7 @@ textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:v
     <p class="gateerr" id="gateErr" hidden></p>
   </form>
 </div>
+
 <dialog id="dlgPay">
   <div class="dhead"><h3>Оплата</h3><small id="payWho"></small></div>
   <div class="dbody">
@@ -469,7 +496,7 @@ textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:v
 <dialog id="dlgCancel">
   <div class="dhead"><h3>Занятие отменено</h3><small id="cxWho"></small></div>
   <div class="dbody">
-    <p class="hint" style="margin:0">Предупредил раньше чем за 6 часов, урок остаётся. Позже, урок сгорает.</p>
+    <p class="hint" id="cxInfo" style="margin:0">Предупредил раньше чем за 6 часов, урок остаётся. Позже, урок сгорает.</p>
     <div class="field"><label for="cxD">Дата</label><input type="date" id="cxD"></div>
   </div>
   <div class="dfoot"><button data-act="close">Назад</button><button data-act="cx-free">Не списывать</button><button class="primary" data-act="cx-charge">Списать урок</button></div>
@@ -488,548 +515,23 @@ textarea:focus{outline:2px solid var(--accent); outline-offset:1px; background:v
   <div class="dhead"><h3>Отметить день</h3><small>ставьте отметки подряд, они сохраняются сразу</small></div>
   <div class="dbody">
     <div class="field"><label for="dayD">Дата</label><input type="date" id="dayD"></div>
+    <div id="dayCal"></div>
     <div class="daylist" id="dayList"></div>
   </div>
   <div class="dfoot"><button class="primary" data-act="close">Готово</button></div>
 </dialog>
-</artifact-local>
 
-<script>
-(function(){
-"use strict";
-var MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
-var MONF=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
-function $(s,r){return (r||document).querySelector(s);}
-function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
-function num(t){if(t==null)return 0;var c=String(t).replace(/−/g,'-').replace(/[\s  ]/g,'').replace(',','.');var v=parseFloat(c);return isNaN(v)?0:v;}
-function fmt(n){n=Math.round(n);return (n<0?'−':'')+new Intl.NumberFormat('ru-RU').format(Math.abs(n));}
-function rub(n){return fmt(n)+' ₽';}
-function plural(n,f){var a=Math.abs(n)%100,b=a%10;if(a>10&&a<20)return f[2];if(b>1&&b<5)return f[1];if(b===1)return f[0];return f[2];}
-function lessonsTxt(n){return fmt(n)+' '+plural(n,['занятие','занятия','занятий']);}
-function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function dShort(s){var p=String(s||todayISO()).split('-');return String(+p[2])+' '+MON[(+p[1]-1)||0];}
+<dialog id="dlgLink">
+  <div class="dhead"><h3>Чей это урок?</h3><small id="linkWho"></small></div>
+  <div class="dbody" id="linkBody"></div>
+  <div class="dfoot"><button data-act="close">Отмена</button><button class="primary" data-act="link-ok">Сохранить</button></div>
+</dialog>
 
-function thr(){return Math.max(0,Math.round(num($('#thr').value)));}
-function rateOf(row){var v=num($('.rate',row).textContent);return v>0?v:0;}
-function balOf(row){return Math.round(num($('.bal-n',row).textContent));}
-function stateFor(b){return b<=0?'debt':(b<=thr()?'low':'ok');}
-function paint(row,b){$('.bal-n',row).textContent=fmt(b);$('.bal-m',row).textContent=rub(b*rateOf(row));row.dataset.state=stateFor(b);}
-function firstName(row){var t=($('.name',row).textContent||'').trim();return t.split(/\s+/)[0]||t||'друг';}
+<dialog id="dlgImport" class="wide">
+  <div class="dhead"><h3>История из календаря</h3><small>балансы не меняются</small></div>
+  <div class="dbody scroll" id="impBody"></div>
+  <div class="dfoot"><button data-act="close">Закрыть</button><button class="primary" data-act="imp-ok" id="impOk" disabled>Загрузить в историю</button></div>
+</dialog>
 
-function addH(row,o){
-  var el=$('#tpl-h').content.firstElementChild.cloneNode(true);
-  el.dataset.d=o.d; el.dataset.t=o.t; el.dataset.delta=String(o.delta); el.dataset.amt=String(o.amt||0);
-  $('.h-d',el).textContent=dShort(o.d);
-  $('.h-l',el).textContent=o.label;
-  $('.h-n',el).textContent=(o.t==='pay')?('+'+fmt(o.delta)+' · '+rub(o.amt)):(o.delta>0?'+'+fmt(o.delta):fmt(o.delta));
-  if(o.note)$('.h-note',el).textContent=o.note;
-  $('.hrows',row).appendChild(el);
-  return el;
-}
-var LABEL={lesson:'Занятие проведено','cancel-charged':'Отмена, урок списан','cancel-free':'Отмена, урок сохранён'};
-function doOp(row,kind,date){
-  var delta=(kind==='cancel-free')?0:-1;
-  addH(row,{d:date,t:kind,delta:delta,amt:0,label:LABEL[kind]});
-  paint(row,balOf(row)+delta);
-}
-function doPay(row,n,sum,date,comment){
-  addH(row,{d:date,t:'pay',delta:n,amt:sum,label:'Оплата'+(comment?', '+comment:'')});
-  paint(row,balOf(row)+n);
-}
-function doUndo(row){
-  var hs=$$('.h',row); if(!hs.length)return false;
-  var last=hs[hs.length-1], d=num(last.dataset.delta);
-  paint(row,balOf(row)-d); last.remove(); return true;
-}
-
-var art=null;
-var artReady=(function(){
-  try{ if(window.claude&&window.claude.use) return window.claude.use('artifact').then(function(a){art=a;return a;},function(){return null;}); }catch(e){}
-  return Promise.resolve(null);
-})();
-var CHIP={
-  artifact:['сохраняется автоматически',0],
-  server:['сохранено на сервере',0],
-  saving:['сохраняю…',0],
-  checking:['проверяю хранилище…',0],
-  'server-error':['не сохранилось, проверьте сеть',1],
-  'artifact-error':['не сохранилось, скачайте копию',1],
-  locked:['нужен вход',1],
-  local:['только в этом браузере',1]
-};
-function setChip(mode){
-  var c=$('#chip'); if(!c)return;
-  var v=CHIP[mode]||CHIP.local;
-  c.textContent=v[0];
-  if(v[1])c.dataset.mode='local'; else c.removeAttribute('data-mode');
-}
-function commit(fn){
-  return artReady.then(function(a){
-    if(a&&typeof a.sync==='function'){
-      return a.sync(fn).then(function(){setChip('artifact');},function(e){console.warn('sync',e);setChip('artifact-error');});
-    }
-    fn();
-  }).then(after);
-}
-
-function snapshot(){
-  return {v:1,ts:Date.now(),thr:$('#thr').value,defRate:$('#defRate').value,
-    tplLow:$('#tplLow').textContent,tplDebt:$('#tplDebt').textContent,
-    students:$$('#rows .row').map(function(r){return{
-      id:r.dataset.id,arch:r.dataset.arch,name:$('.name',r).textContent,rate:rateOf(r),
-      contact:$('.contact',r).textContent,note:$('.snote',r).textContent,bal:balOf(r),
-      h:$$('.h',r).map(function(h){return{d:h.dataset.d,t:h.dataset.t,delta:num(h.dataset.delta),
-        amt:num(h.dataset.amt),label:$('.h-l',h).textContent,note:$('.h-note',h).textContent};})
-    };})};
-}
-function backup(){try{localStorage.setItem('uroki.backup',JSON.stringify(snapshot()));}catch(e){}}
-
-var mOff=0;
-function renderMonth(){
-  var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()+mOff);
-  var y=d.getFullYear(), m=d.getMonth();
-  var inc=0,les=0,cxC=0,cxF=0;
-  $$('#rows .h').forEach(function(h){
-    var p=String(h.dataset.d||'').split('-');
-    if(+p[0]!==y||(+p[1]-1)!==m)return;
-    var t=h.dataset.t;
-    if(t==='pay')inc+=num(h.dataset.amt);
-    else if(t==='lesson')les++;
-    else if(t==='cancel-charged')cxC++;
-    else if(t==='cancel-free')cxF++;
-  });
-  var title=MONF[m]+(y!==new Date().getFullYear()?(' '+y):'');
-  $('#month').innerHTML=
-    '<div class="month-nav"><button class="ghost tiny" data-act="m-prev" aria-label="Предыдущий месяц">‹</button>'+
-    '<b>'+title+'</b>'+
-    (mOff<0?'<button class="ghost tiny" data-act="m-next" aria-label="Следующий месяц">›</button>':'')+
-    '</div><div class="mstats">'+
-    '<span class="mstat"><i>получено</i><b>'+rub(inc)+'</b></span>'+
-    '<span class="mstat"><i>уроков</i><b>'+les+'</b></span>'+
-    '<span class="mstat"><i>отмен со списанием</i><b>'+cxC+'</b></span>'+
-    '<span class="mstat"><i>отмен без списания</i><b>'+cxF+'</b></span></div>';
-}
-
-function msgFor(row){
-  var b=balOf(row), nm=firstName(row);
-  if(b<=0){
-    var dbt=Math.abs(b);
-    return ($('#tplDebt').textContent||'')
-      .replace(/\{имя\}/g,nm)
-      .replace(/\{долг\}/g,dbt?(lessonsTxt(dbt)+', '+rub(dbt*rateOf(row))):'ноль занятий')
-      .replace(/\{остаток\}/g,lessonsTxt(b));
-  }
-  return ($('#tplLow').textContent||'').replace(/\{имя\}/g,nm)
-    .replace(/\{остаток\}/g,lessonsTxt(b))
-    .replace(/\{долг\}/g,lessonsTxt(0));
-}
-function renderDue(){
-  var t=thr();
-  var list=$$('#rows .row').filter(function(r){return r.dataset.arch!=='1'&&balOf(r)<=t;});
-  var box=$('#due');
-  if(!list.length){box.hidden=true;box.innerHTML='';return;}
-  box.hidden=false;
-  box.innerHTML='<h2>Пора напомнить об оплате</h2><ul>'+list.map(function(r){
-    var b=balOf(r);
-    var st=b<0?('долг '+lessonsTxt(Math.abs(b))+', '+rub(Math.abs(b)*rateOf(r))):(b===0?'занятия закончились':('осталось '+lessonsTxt(b)));
-    var c=($('.contact',r).textContent||'').trim();
-    return '<li><b>'+esc($('.name',r).textContent)+'</b><em>'+st+(c?(' · '+esc(c)):'')+'</em>'+
-      '<button class="tiny" data-act="copy-due" data-sid="'+esc(r.dataset.id)+'">Скопировать текст</button></li>';
-  }).join('')+'</ul>';
-}
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-
-function toast(msg){
-  var old=document.getElementById('toast'); if(old)old.remove();
-  var t=document.createElement('div'); t.className='toast'; t.id='toast'; t.textContent=msg;
-  document.body.appendChild(t); setTimeout(function(){if(t.parentNode)t.remove();},2400);
-}
-function copyText(s,okMsg){
-  function fallback(){
-    var ta=document.createElement('textarea'); ta.value=s; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select();
-    try{document.execCommand('copy');toast(okMsg);}catch(e){toast('Не удалось скопировать');}
-    ta.remove();
-  }
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(s).then(function(){toast(okMsg);},fallback);
-  } else fallback();
-}
-var armedKey=null,armedT=null;
-function needSecond(key,msg){
-  if(armedKey===key){clearTimeout(armedT);armedKey=null;return true;}
-  armedKey=key;toast(msg);clearTimeout(armedT);armedT=setTimeout(function(){armedKey=null;},4500);
-  return false;
-}
-// Хранилище выбирается при загрузке: 'artifact' - рантайм claude.ai,
-// 'server' - функция /api/state поверх Redis, 'local' - только localStorage.
-var MODE='local', saveTimer=null, saving=false, dirty=false;
-function pushState(){
-  if(MODE!=='server')return;
-  dirty=true; clearTimeout(saveTimer); saveTimer=setTimeout(flush,700);
-}
-function flush(){
-  if(MODE!=='server'||saving||!dirty)return;
-  saving=true; dirty=false; setChip('saving');
-  fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(snapshot())})
-    .then(function(r){
-      if(r.status===401){var e=new Error('auth');e.auth=1;throw e;}
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      return r.json();
-    })
-    .then(function(){saving=false;setChip('server');if(dirty)flush();})
-    .catch(function(e){
-      saving=false; dirty=true;
-      if(e&&e.auth){setChip('locked');showGate('Сессия истекла, войдите снова');return;}
-      setChip('server-error'); console.warn('save',e);
-    });
-}
-function after(){renderMonth();renderDue();backup();pushState();}
-
-var curRow=null;
-function openPay(row){
-  curRow=row;
-  $('#payWho').textContent=($('.name',row).textContent||'')+' · '+rateOf(row)+' ₽ за урок';
-  $('#payD').value=todayISO(); $('#payN').value=5; $('#payS').value=Math.round(5*rateOf(row)); $('#payC').value='';
-  $$('#packs button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.n==='5'?'true':'false');});
-  $('#dlgPay').showModal();
-}
-function syncPaySum(){ if(curRow) $('#payS').value=Math.round(num($('#payN').value)*rateOf(curRow)); }
-function openCancel(row){
-  curRow=row; $('#cxWho').textContent=$('.name',row).textContent||'';
-  $('#cxD').value=todayISO(); $('#dlgCancel').showModal();
-}
-function renderDay(){
-  var host=$('#dayList');
-  host.innerHTML=$$('#rows .row').filter(function(r){return r.dataset.arch!=='1';}).map(function(r){
-    return '<div class="dayrow" data-sid="'+esc(r.dataset.id)+'"><span class="dn">'+esc($('.name',r).textContent)+'</span>'+
-      '<span class="db">'+fmt(balOf(r))+'</span>'+
-      '<button class="tiny" data-act="d-lesson">Провёл</button>'+
-      '<button class="tiny" data-act="d-charge">Отмена, списать</button>'+
-      '<button class="tiny" data-act="d-free">Отмена, оставить</button>'+
-      '<span class="done"></span></div>';
-  }).join('');
-}
-function openDay(){ $('#dayD').value=todayISO(); renderDay(); $('#dlgDay').showModal(); }
-
-function addStudent(){
-  commit(function(){
-    var el=$('#tpl-row').content.firstElementChild.cloneNode(true);
-    el.dataset.id='s'+Date.now().toString(36);
-    $('.rate',el).textContent=String(Math.round(num($('#defRate').value))||2000);
-    $('#rows').appendChild(el);
-    paint(el,0);
-  }).then(function(){
-    var last=$$('#rows .row').pop(); if(last){var n=$('.name',last); n.focus(); last.scrollIntoView({block:'center'});}
-  });
-}
-function restore(){
-  var raw=null; try{raw=localStorage.getItem('uroki.backup');}catch(e){}
-  if(!raw){toast('Копии на этом устройстве нет');return;}
-  if(!needSecond('restore','Это заменит текущие данные. Нажмите ещё раз'))return;
-  var d; try{d=JSON.parse(raw);}catch(e){toast('Копия повреждена');return;}
-  commit(function(){
-    if(d.thr)$('#thr').value=d.thr;
-    if(d.defRate)$('#defRate').value=d.defRate;
-    if(d.tplLow)$('#tplLow').textContent=d.tplLow;
-    if(d.tplDebt)$('#tplDebt').textContent=d.tplDebt;
-    var host=$('#rows'); host.innerHTML='';
-    (d.students||[]).forEach(function(s){
-      var el=$('#tpl-row').content.firstElementChild.cloneNode(true);
-      el.dataset.id=s.id||('s'+Math.random().toString(36).slice(2));
-      el.dataset.arch=s.arch||'0';
-      $('.name',el).textContent=s.name||'';
-      $('.rate',el).textContent=String(s.rate||2000);
-      $('.contact',el).textContent=s.contact||'';
-      $('.snote',el).textContent=s.note||'';
-      (s.h||[]).forEach(function(h){addH(el,{d:h.d,t:h.t,delta:h.delta,amt:h.amt,label:h.label,note:h.note});});
-      host.appendChild(el);
-      paint(el,s.bal||0);
-    });
-    toast('Данные восстановлены');
-  });
-}
-function exportBackup(){
-  var data=JSON.stringify(snapshot(),null,2), name='uroki-'+todayISO()+'.json';
-  var p=null; try{ if(window.claude&&window.claude.use) p=window.claude.use('downloads'); }catch(e){}
-  Promise.resolve(p).then(function(dl){
-    if(dl&&dl.save) return dl.save({filename:name,data:data}).then(function(){toast('Копия сохранена');});
-    throw 0;
-  }).catch(function(){ copyText(data,'Копия скопирована в буфер обмена'); });
-}
-
-function onClick(e){
-  var b=e.target.closest?e.target.closest('button[data-act]'):null;
-  if(!b)return;
-  var act=b.dataset.act, row=b.closest('.row');
-  if(act==='m-prev'){mOff--;renderMonth();return;}
-  if(act==='m-next'){if(mOff<0){mOff++;renderMonth();}return;}
-  if(act==='add'){addStudent();return;}
-  if(act==='day'){openDay();return;}
-  if(act==='export'){exportBackup();return;}
-  if(act==='restore'){restore();return;}
-  if(act==='import'){var fi=$('#importFile'); if(fi)fi.click(); return;}
-  if(act==='paste'){
-    var box=$('#pasteBox'), pe=$('#pasteErr');
-    if(box)box.value=''; if(pe)pe.hidden=true;
-    $('#dlgPaste').showModal(); if(box)setTimeout(function(){box.focus();},50);
-    return;
-  }
-  if(act==='paste-ok'){
-    var box2=$('#pasteBox'), pe2=$('#pasteErr');
-    var n=loadSnapshot(box2?box2.value:'');
-    if(!n){
-      if(pe2){pe2.textContent='Не получилось разобрать. Нужен объект со списком students или просто массив учеников.';pe2.hidden=false;}
-      return;
-    }
-    $('#dlgPaste').close();
-    toast('Загружено учеников: '+n);
-    return;
-  }
-  if(act==='logout'){logout();return;}
-  if(act==='close'){var dg=b.closest('dialog');if(dg)dg.close();return;}
-  if(act==='copy-due'){
-    var r=$('#rows .row[data-id="'+b.dataset.sid+'"]');
-    if(r)copyText(msgFor(r),'Текст скопирован'); return;
-  }
-  if(act==='pay-ok'){
-    if(!curRow)return;
-    var n=Math.round(num($('#payN').value)), sum=Math.round(num($('#payS').value));
-    if(!n){toast('Укажите количество уроков');return;}
-    var r2=curRow, dt=$('#payD').value||todayISO(), cm=($('#payC').value||'').trim();
-    commit(function(){doPay(r2,n,sum,dt,cm);});
-    $('#dlgPay').close(); toast('Оплата записана'); return;
-  }
-  if(act==='cx-free'||act==='cx-charge'){
-    if(!curRow)return;
-    var r3=curRow, dt3=$('#cxD').value||todayISO(), k=(act==='cx-charge')?'cancel-charged':'cancel-free';
-    commit(function(){doOp(r3,k,dt3);});
-    $('#dlgCancel').close(); toast(act==='cx-charge'?'Урок списан':'Урок сохранён'); return;
-  }
-  if(act==='d-lesson'||act==='d-charge'||act==='d-free'){
-    var dr=b.closest('.dayrow'); if(!dr)return;
-    var tr=$('#rows .row[data-id="'+dr.dataset.sid+'"]'); if(!tr)return;
-    var kind=act==='d-lesson'?'lesson':(act==='d-charge'?'cancel-charged':'cancel-free');
-    var dd=$('#dayD').value||todayISO();
-    commit(function(){doOp(tr,kind,dd);}).then(function(){
-      $('.db',dr).textContent=fmt(balOf(tr));
-      $('.done',dr).textContent=kind==='lesson'?'провёл ✓':(kind==='cancel-charged'?'списано ✓':'отмена ✓');
-    });
-    return;
-  }
-  if(!row)return;
-  if(act==='lesson'){commit(function(){doOp(row,'lesson',todayISO());});toast('Занятие записано');return;}
-  if(act==='cancel'){openCancel(row);return;}
-  if(act==='pay'){openPay(row);return;}
-  if(act==='copy'){copyText(msgFor(row),'Текст скопирован');return;}
-  if(act==='undo'){
-    if(!needSecond('undo:'+row.dataset.id,'Отменить последнюю запись? Нажмите ещё раз'))return;
-    commit(function(){if(!doUndo(row))toast('История пуста');});return;
-  }
-  if(act==='arch'){commit(function(){row.dataset.arch=row.dataset.arch==='1'?'0':'1';});return;}
-  if(act==='del'){
-    if(!needSecond('del:'+row.dataset.id,'Удалить ученика и всю историю? Нажмите ещё раз'))return;
-    commit(function(){row.remove();});toast('Ученик удалён');return;
-  }
-}
-
-function bind(){
-  document.addEventListener('click',onClick);
-  document.addEventListener('claude:edit',function(){renderMonth();renderDue();});
-  document.addEventListener('keydown',function(e){
-    if(e.key==='Enter'&&e.target.matches&&e.target.matches('.name,.rate,.contact,.h-note')){e.preventDefault();e.target.blur();}
-  });
-  document.addEventListener('paste',function(e){
-    var t=e.target; if(!t||!t.isContentEditable)return;
-    var cd=e.clipboardData||window.clipboardData; if(!cd)return;
-    e.preventDefault();
-    var txt=cd.getData('text')||'';
-    if(!t.classList.contains('tpl'))txt=txt.replace(/\s+/g,' ').trim();
-    document.execCommand('insertText',false,txt);
-  });
-  document.addEventListener('focusout',function(e){
-    var t=e.target;
-    if(t&&t.classList&&t.classList.contains('rate')){
-      var row=t.closest('.row'); if(!row)return;
-      var v=Math.round(num(t.textContent));
-      commit(function(){t.textContent=String(v>0?v:0);paint(row,balOf(row));});
-    }
-  });
-  document.addEventListener('change',function(e){
-    var t=e.target;
-    if(t.id==='arch'){$('#rows').dataset.localArch=t.checked?'1':'0';return;}
-    if(t.id==='thr'){commit(function(){$$('#rows .row').forEach(function(r){paint(r,balOf(r));});});return;}
-    if(t.id==='payN'){syncPaySum();return;}
-    if(t.id==='importFile'){ if(t.files&&t.files[0])importFile(t.files[0]); t.value=''; return; }
-  });
-  document.addEventListener('input',function(e){
-    if(e.target.id==='payN'){syncPaySum();
-      $$('#packs button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.n===String(Math.round(num($('#payN').value)))?'true':'false');});}
-  });
-  window.addEventListener('beforeunload',function(){
-    if(MODE==='server'&&dirty&&navigator.sendBeacon){
-      try{navigator.sendBeacon('/api/state',new Blob([JSON.stringify(snapshot())],{type:'application/json'}));}catch(e){}
-    }
-  });
-  var gf=$('#gateForm');
-  if(gf)gf.addEventListener('submit',function(e){
-    e.preventDefault();
-    var pw=$('#gatePw'); login(pw?pw.value:'');
-  });
-  var packs=$('#packs');
-  if(packs)packs.addEventListener('click',function(e){
-    var b=e.target.closest('button[data-n]'); if(!b)return;
-    $('#payN').value=b.dataset.n; syncPaySum();
-    $$('#packs button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
-  });
-}
-function applySnapshot(d){
-  if(!d||!d.students||!d.students.length)return false;
-  if(d.thr)$('#thr').value=d.thr;
-  if(d.defRate)$('#defRate').value=d.defRate;
-  if(d.tplLow)$('#tplLow').textContent=d.tplLow;
-  if(d.tplDebt)$('#tplDebt').textContent=d.tplDebt;
-  var host=$('#rows'); host.innerHTML='';
-  d.students.forEach(function(s){
-    var el=$('#tpl-row').content.firstElementChild.cloneNode(true);
-    el.dataset.id=s.id||('s'+Math.random().toString(36).slice(2));
-    el.dataset.arch=s.arch||'0';
-    $('.name',el).textContent=s.name||'';
-    $('.rate',el).textContent=String(s.rate||2000);
-    $('.contact',el).textContent=s.contact||'';
-    $('.snote',el).textContent=s.note||'';
-    (s.h||[]).forEach(function(h){addH(el,{d:h.d,t:h.t,delta:h.delta,amt:h.amt,label:h.label,note:h.note});});
-    host.appendChild(el);
-    paint(el,s.bal||0);
-  });
-  return true;
-}
-function loadLocal(){
-  var raw=null; try{raw=localStorage.getItem('uroki.backup');}catch(e){}
-  if(!raw)return false;
-  var d; try{d=JSON.parse(raw);}catch(e){return false;}
-  return applySnapshot(d);
-}
-function showGate(msg){
-  var g=$('#gate'); if(!g)return;
-  g.hidden=false;
-  var e=$('#gateErr');
-  if(e){ e.textContent=msg||''; e.hidden=!msg; }
-  var f=$('#gatePw'); if(f){f.value='';setTimeout(function(){f.focus();},50);}
-}
-function hideGate(){ var g=$('#gate'); if(g)g.hidden=true; }
-
-// Автономная сборка: пробуем серверное хранилище, иначе живём на localStorage.
-function startServer(){
-  if(location.protocol==='file:'){goLocal();return Promise.resolve();}
-  setChip('checking');
-  return fetch('/api/state',{cache:'no-store'})
-    .then(function(r){
-      if(r.status===401){MODE='server';setChip('locked');showGate('');return null;}
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      return r.json();
-    })
-    .then(function(j){
-      if(j===null)return;
-      MODE='server'; hideGate();
-      // Выходить есть смысл только если пароль на сервере задан.
-      var needsPw=!!(j&&j.auth&&j.auth.required);
-      var btn=$('[data-act="logout"]'); if(btn)btn.hidden=!needsPw;
-      var warn=$('#openWarn'); if(warn)warn.hidden=needsPw;
-      if(j&&j.state&&applySnapshot(j.state)){
-        renderMonth(); renderDue(); backup(); setChip('server');
-      } else {
-        // Хранилище пустое: заливаем то, что есть на руках, как начальное состояние.
-        if(loadLocal()){renderMonth();renderDue();}
-        backup(); setChip('server'); dirty=true; flush();
-      }
-    })
-    .catch(function(e){console.warn('storage',e);goLocal();});
-}
-function login(pw){
-  var err=$('#gateErr');
-  return fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})})
-    .then(function(r){
-      if(r.ok)return startServer();
-      if(r.status===429){showGate('Слишком много попыток. Подождите 15 минут.');return;}
-      if(r.status===400){showGate('Пароль на сервере не задан. Добавьте APP_PASSWORD в настройках проекта.');return;}
-      showGate('Пароль не подошёл');
-    })
-    .catch(function(){showGate('Сервер не отвечает');});
-}
-function logout(){
-  if(!needSecond('logout','Выйти из аккаунта? Нажмите ещё раз'))return;
-  fetch('/api/session',{method:'DELETE',cache:'no-store'})
-    .then(function(){return null;},function(){return null;})
-    .then(function(){location.replace(location.pathname+'?logout='+Date.now());});
-}
-// Разбор чужого JSON терпимый: полный снимок, голый массив учеников или
-// список без истории - всё приводится к внутреннему виду.
-function normalize(d){
-  if(typeof d==='string'){ try{ d=JSON.parse(d); }catch(e){ return null; } }
-  if(Array.isArray(d)) d={students:d};
-  if(!d||typeof d!=='object') return null;
-  var list=d.students||d.ученики||d.items;
-  if(!Array.isArray(list)||!list.length) return null;
-  var today=todayISO();
-  var defRate=Number(d.defRate)||Number($('#defRate').value)||2000;
-  return {
-    v:1, ts:Date.now(),
-    thr:d.thr!=null?String(d.thr):$('#thr').value,
-    defRate:String(defRate),
-    tplLow:d.tplLow||$('#tplLow').textContent,
-    tplDebt:d.tplDebt||$('#tplDebt').textContent,
-    students:list.map(function(x,i){
-      var bal=Number(x.bal!=null?x.bal:(x.balance!=null?x.balance:x.остаток));
-      if(!isFinite(bal))bal=0;
-      var rate=Number(x.rate!=null?x.rate:x.ставка)||defRate;
-      var h=Array.isArray(x.h)?x.h:(Array.isArray(x.history)?x.history:[]);
-      if(!h.length)h=[{d:today,t:'init',delta:bal,amt:0,label:'Стартовый остаток',note:''}];
-      return {
-        id:String(x.id||('s'+(i+1)+'-'+Math.random().toString(36).slice(2,6))),
-        arch:String(x.arch||'0')==='1'?'1':'0',
-        name:String(x.name||x.имя||'Без имени'),
-        rate:rate, contact:String(x.contact||x.контакт||''), note:String(x.note||''),
-        bal:Math.round(bal),
-        h:h.map(function(r){return{
-          d:String(r.d||r.date||today), t:String(r.t||r.type||'init'),
-          delta:Number(r.delta)||0, amt:Number(r.amt||r.amount)||0,
-          label:String(r.label||'Запись'), note:String(r.note||'')
-        };})
-      };
-    })
-  };
-}
-// Перед заменой откладываем текущее состояние, чтобы неудачный импорт можно было откатить.
-function loadSnapshot(input){
-  var d=normalize(input);
-  if(!d)return null;
-  try{ localStorage.setItem('uroki.beforeImport',JSON.stringify(snapshot())); }catch(e){}
-  commit(function(){ applySnapshot(d); });
-  return d.students.length;
-}
-function importFile(file){
-  var reader=new FileReader();
-  reader.onload=function(){
-    var n=loadSnapshot(String(reader.result));
-    toast(n?('Загружено учеников: '+n):'В файле не нашлось учеников');
-  };
-  reader.onerror=function(){ toast('Файл не читается'); };
-  reader.readAsText(file);
-}
-function goLocal(){
-  MODE='local'; setChip('local');
-  if(loadLocal()){renderMonth();renderDue();} else backup();
-}
-function init(){
-  var ar=$('#arch'); if(ar)$('#rows').dataset.localArch=ar.checked?'1':'0';
-  renderMonth(); renderDue();
-  artReady.then(function(a){
-    if(a){MODE='artifact';setChip('artifact');backup();return;}
-    return startServer();
-  });
-}
-if(!window.__urokiBound){window.__urokiBound=true;bind();}
-init();
-})();
-</script>
+<!-- @inline lib.js -->
+<!-- @inline app.js -->

@@ -15,6 +15,9 @@
 //   post-status  смена статуса поста
 //   backup       ежедневная резервная копия приложения в папку на Google Drive
 //
+// Отдельно, по расписанию внутри Google: publishTelegram() публикует одобренные
+// посты в Telegram-канал. Настройка: setupTelegram(), подробности ниже.
+//
 // Описание телефонов и прочие подробности из событий наружу не отдаются:
 // только название, время и адреса участников.
 
@@ -22,7 +25,7 @@ var SHEET_NOTES = 'Конспекты';
 var SHEET_POSTS = 'Посты';
 var BACKUP_FOLDER = 'Уроки и оплаты: резервные копии';
 var BACKUP_KEEP = 90;
-var POST_STATUSES = ['черновик', 'опубликован', 'отклонён'];
+var POST_STATUSES = ['черновик', 'одобрен', 'опубликован', 'отклонён'];
 var MAX_RANGE_DAYS = 400;
 
 function doGet(e) {
@@ -150,10 +153,10 @@ function notes_(p) {
 
 // ---------- посты ----------
 // Колонки листа «Посты»: id · Создан · Неделя · Заголовок · Слайды · Подпись · Хэштеги ·
-// Статус · Даты уроков.
+// Статус · Даты уроков · Telegram (текст поста для канала) · В Telegram (когда опубликован).
 
 function posts_() {
-  var rows = rows_(SHEET_POSTS, 9);
+  var rows = rows_(SHEET_POSTS, 11);
   var list = [];
   rows.forEach(function (r) {
     var id = String(r[0] || '').trim();
@@ -167,7 +170,9 @@ function posts_() {
       caption: String(r[5] || ''),
       hashtags: String(r[6] || ''),
       status: String(r[7] || 'черновик'),
-      dates: String(r[8] || '')
+      dates: String(r[8] || ''),
+      telegram: String(r[9] || ''),
+      tgPosted: iso_(r[10])
     });
   });
   list.reverse();
@@ -191,6 +196,55 @@ function postStatus_(p) {
   }
   throw new Error('not-found');
 }
+
+// ---------- Telegram ----------
+// Свойства скрипта: TG_TOKEN (токен бота от @BotFather), TG_CHAT (например @enpony).
+// TG_MODE: 'approved' (по умолчанию) публикует только посты со статусом «одобрен»;
+// 'auto' публикует и черновики, которым больше TG_DELAY_HOURS часов (по умолчанию 48),
+// если вы не поставили им «отклонён». За один запуск уходит не больше одного поста.
+
+function publishTelegram() {
+  var props = PropertiesService.getScriptProperties();
+  var token = props.getProperty('TG_TOKEN'), chat = props.getProperty('TG_CHAT');
+  if (!token || !chat) throw new Error('telegram-not-configured');
+  var mode = props.getProperty('TG_MODE') || 'approved';
+  var delay = Number(props.getProperty('TG_DELAY_HOURS')) || 48;
+  var sh = sheet_(SHEET_POSTS);
+  var last = sh.getLastRow();
+  if (last < 2) return { ok: true, posted: 0 };
+  var rows = sh.getRange(2, 1, last - 1, 11).getValues();
+  var now = Date.now();
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (!String(r[0] || '').trim() || String(r[10] || '').trim()) continue;
+    var status = String(r[7] || 'черновик').trim();
+    var created = new Date(r[1]).getTime();
+    var ready = status === 'одобрен' ||
+      (mode === 'auto' && status === 'черновик' && !isNaN(created) && now - created >= delay * 3600e3);
+    if (!ready) continue;
+    var text = telegramText_(r);
+    var res = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      payload: JSON.stringify({ chat_id: chat, text: text, parse_mode: 'HTML', disable_web_page_preview: true })
+    });
+    var j = {};
+    try { j = JSON.parse(res.getContentText()); } catch (err) { j = {}; }
+    if (!j.ok) throw new Error('telegram: ' + (j.description || res.getResponseCode()));
+    sh.getRange(i + 2, 8).setValue('опубликован');
+    sh.getRange(i + 2, 11).setValue(new Date().toISOString());
+    return { ok: true, posted: 1, id: String(r[0]) };
+  }
+  return { ok: true, posted: 0 };
+}
+
+// Текст для канала: готовый из колонки «Telegram», иначе заголовок, подпись и хэштеги.
+function telegramText_(r) {
+  var own = String(r[9] || '').trim();
+  var text = own ? tgEsc_(own) : ('<b>' + tgEsc_(String(r[3] || '').trim()) + '</b>\n\n' + tgEsc_(String(r[5] || '').trim()) +
+    (String(r[6] || '').trim() ? '\n\n' + tgEsc_(String(r[6]).trim()) : ''));
+  return text.slice(0, 4000);
+}
+function tgEsc_(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 // ---------- резервные копии ----------
 
@@ -257,6 +311,11 @@ function sheet_(name) {
   }
   var sh = ss.getSheetByName(name);
   if (!sh) throw new Error('no-sheet:' + name);
+  // В старых таблицах у «Постов» 9 колонок: добавляем «Telegram» и «В Telegram».
+  if (name === SHEET_POSTS && sh.getMaxColumns && sh.getMaxColumns() < 11) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), 11 - sh.getMaxColumns());
+    sh.getRange(1, 10, 1, 2).setValues([['Telegram', 'В Telegram']]);
+  }
   return sh;
 }
 
@@ -320,6 +379,28 @@ function checkCalendar() {
   var res = events_({ from: now.toISOString(), to: new Date(now.getTime() + 14 * 864e5).toISOString(), q: 'по английскому, Silver Fern' });
   res.events.forEach(function (e) { Logger.log(e.start + '  ' + e.title + '  ' + e.emails.join(', ')); });
   Logger.log('Всего: ' + res.events.length);
+}
+
+// Telegram, шаг 1. Проверяет бота и канал и включает ежедневную публикацию в 19:00.
+// Перед запуском добавьте в свойства скрипта TG_TOKEN и TG_CHAT.
+function setupTelegram() {
+  var props = PropertiesService.getScriptProperties();
+  var token = props.getProperty('TG_TOKEN'), chat = props.getProperty('TG_CHAT');
+  if (!token || !chat) throw new Error('Добавьте TG_TOKEN и TG_CHAT в свойства скрипта');
+  var me = JSON.parse(UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/getMe', { muteHttpExceptions: true }).getContentText());
+  if (!me.ok) throw new Error('Токен бота не подошёл: ' + me.description);
+  var ch = JSON.parse(UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/getChat?chat_id=' + encodeURIComponent(chat), { muteHttpExceptions: true }).getContentText());
+  if (!ch.ok) throw new Error('Канал не найден или бот не админ: ' + ch.description);
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'publishTelegram') ScriptApp.deleteTrigger(t);
+  });
+  var every = Math.max(1, Math.min(30, Number(props.getProperty('TG_EVERY_DAYS')) || 1));
+  var hourRaw = String(props.getProperty('TG_HOUR') || '').trim();
+  var hour = hourRaw === '' ? 19 : Number(hourRaw);
+  if (!(hour >= 0 && hour <= 23)) hour = 19;
+  ScriptApp.newTrigger('publishTelegram').timeBased().everyDays(every).atHour(hour).create();
+  Logger.log('Бот @' + me.result.username + ' публикует в «' + ch.result.title + '» по одному посту из очереди ' +
+    (every === 1 ? 'каждый день' : 'раз в ' + every + ' дн.') + ' около ' + hour + ':00.');
 }
 
 // Новый токен, если старый куда-то утёк. После смены обновите GOOGLE_SCRIPT_TOKEN на Vercel.

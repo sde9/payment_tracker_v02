@@ -833,20 +833,24 @@
   }
 
   // ---------- посты ----------
-  var POST_ST = ['черновик', 'опубликован', 'отклонён'];
+  var POST_ST = ['черновик', 'одобрен', 'опубликован', 'отклонён'];
   function renderPosts() {
     var v = $('#v-posts'); if (!v || TAB !== 'posts') return;
     var head = '<div class="phrow"><h2 class="ph">Черновики для Instagram</h2>' + (MODE === 'server' ? '<button class="tiny ghost" data-act="posts-refresh">Обновить</button>' : '') + '</div>' +
-      '<p class="gnote">Черновики пишет еженедельная задача по конспектам уроков. В них нет имён, оценок и личных подробностей учеников: только тема и факты. Публикуете вы сами.</p>';
+      '<p class="gnote">Черновики пишет еженедельная задача по конспектам уроков. В них нет имён, оценок и личных подробностей учеников: только тема и факты. Поставьте «одобрен», и пост встанет в очередь: бот публикует в Telegram-канал по одному посту, самый старый первым (по умолчанию раз в день около 19:00). Instagram публикуете сами.</p>';
     if (MODE !== 'server') { v.innerHTML = head + '<p class="gnote">Посты работают в версии на сервере.</p>'; return; }
     if (G.postsState === 'off' || G.state === 'off') { v.innerHTML = head + '<p class="gnote">Google не подключён: docs/google-setup.md.</p>'; return; }
     if (G.postsState === 'error') { v.innerHTML = head + '<p class="gnote err">' + esc(G.postsErr) + '</p>'; return; }
     if (!G.posts) { v.innerHTML = head + '<p class="gnote">Загружаю…</p>'; if (G.postsState !== 'loading') loadPosts(); return; }
     if (!G.posts.length) { v.innerHTML = head + '<p class="gnote">Черновиков пока нет. Первые появятся после еженедельного запуска.</p>'; return; }
+    // Бот берёт самый старый одобренный пост, а список здесь от новых к старым.
+    var queue = G.posts.filter(function (p) { return p.status === 'одобрен' && !p.tgPosted; }).reverse();
     v.innerHTML = head + '<div class="posts">' + G.posts.map(function (p) {
+      var qn = queue.indexOf(p) + 1;
       var slides = String(p.slides || '').split(/\n\s*---\s*\n|\n{2,}/).map(function (x) { return x.trim(); }).filter(Boolean);
       return '<article class="panel post" data-post="' + attr(p.id) + '"><header><h3>' + esc(p.title || 'Без заголовка') + '</h3><span class="pst" data-s="' + attr(p.status) + '">' + esc(p.status) + '</span></header>' +
-        '<div class="meta2">' + esc([p.week ? 'неделя ' + p.week : '', p.dates ? 'по урокам ' + p.dates : ''].filter(Boolean).join(' · ')) + '</div>' +
+        '<div class="meta2">' + esc([p.week ? 'неделя ' + p.week : '', p.dates ? 'по урокам ' + p.dates : '', p.tgPosted ? 'в Telegram ' + dShort(L.localDate(p.tgPosted)) : '', qn ? 'в очереди Telegram: ' + qn + '-й' : ''].filter(Boolean).join(' · ')) + '</div>' +
+        (p.telegram ? '<details class="tview"><summary>Текст для Telegram</summary><div class="cap">' + esc(p.telegram) + '</div></details>' : '') +
         (slides.length ? '<ol class="slides">' + slides.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' : '') +
         (p.caption ? '<div class="cap">' + esc(p.caption) + '</div>' : '') +
         (p.hashtags ? '<div class="tags">' + esc(p.hashtags) + '</div>' : '') +

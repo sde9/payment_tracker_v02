@@ -78,8 +78,10 @@ const waitChip = (p, needle) =>
   ok('учеников в хранилище', JSON.parse(store.get('uroki:state')).students.length, 5);
   await p.click('[data-tab="main"]');
 
+  await p.click('#plist [data-sid="s1"]'); 
   await p.click('.row[data-id="s1"] button[data-act="lesson"]');
   await p.waitForTimeout(1400);
+  await p.click('#plist [data-sid="s5"]'); 
   await p.click('.row[data-id="s5"] button[data-act="pay"]');
   await p.waitForTimeout(200);
   await p.click('#packs button[data-n="10"]');
@@ -106,6 +108,7 @@ const waitChip = (p, needle) =>
   ok('данные не затёрты', store.get('uroki:state') === before, true);
 
   await p.route('**/api/state', (route) => route.abort());
+  await p.click('#plist [data-sid="s2"]'); 
   await p.click('.row[data-id="s2"] button[data-act="lesson"]');
   await p.waitForTimeout(1500);
   ok('индикатор при обрыве', await chip(p), 'не сохранилось, проверьте сеть');

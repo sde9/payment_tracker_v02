@@ -36,6 +36,7 @@ const {chromium}=require('playwright');
   ok('due count',await p.$$eval('#due li',n=>n.length),3);
 
   // Провёл x4 on Анна: 6 -> 2 -> low
+  await p.click('#plist [data-sid="s1"]'); 
   for(let i=0;i<4;i++){ await p.click('.row[data-id="s1"] button[data-act="lesson"]'); await p.waitForTimeout(60); }
   ok('Анна after 4 lessons',await bal('s1'),'2');
   ok('Анна state low',await state('s1'),'low');
@@ -44,6 +45,7 @@ const {chromium}=require('playwright');
   ok('history rows Анна',await p.$$eval('.row[data-id="s1"] .h',n=>n.length),5);
 
   // Отмена без списания на Борисе
+  await p.click('#plist [data-sid="s2"]'); 
   await p.click('.row[data-id="s2"] button[data-act="cancel"]');
   await p.waitForTimeout(150);
   await p.click('#dlgCancel button[data-act="cx-free"]');
@@ -57,6 +59,7 @@ const {chromium}=require('playwright');
   ok('Борис charged cancel -> 3',await bal('s2'),'3');
 
   // Оплата 10 уроков Нине: -5 -> 5, сумма 20000
+  await p.click('#plist [data-sid="s5"]'); 
   await p.click('.row[data-id="s5"] button[data-act="pay"]');
   await p.waitForTimeout(150);
   await p.click('#packs button[data-n="10"]');
@@ -69,6 +72,7 @@ const {chromium}=require('playwright');
   ok('Нина ₽',await money('s5'),'10 000 ₽');
 
   // Марк: ставка 950, оплата 4
+  await p.click('#plist [data-sid="s4"]'); 
   await p.click('.row[data-id="s4"] button[data-act="pay"]');
   await p.waitForTimeout(150);
   await p.click('#packs button[data-n="4"]');
@@ -87,7 +91,6 @@ const {chromium}=require('playwright');
   ok('месяц отмен без списания',mstats[3],'1');
 
   // undo (double click needed)
-  await p.click('.row[data-id="s4"] .hist summary'); await p.waitForTimeout(80);
   await p.click('.row[data-id="s4"] button[data-act="undo"]'); await p.waitForTimeout(80);
   await p.click('.row[data-id="s4"] button[data-act="undo"]'); await p.waitForTimeout(200);
   ok('Марк after undo pay',await bal('s4'),'0');
@@ -108,6 +111,7 @@ const {chromium}=require('playwright');
   ok('rows after add',await p.$$eval('#rows .row',n=>n.length),6);
 
   // day mode
+  await p.click('[data-tab="today"]'); await p.waitForTimeout(150);
   await p.click('button[data-act="day"]'); await p.waitForTimeout(200);
   ok('day list rows',await p.$$eval('#dayList .dayrow',n=>n.length),6);
   await p.click('#dayList .dayrow[data-sid="s1"] button[data-act="d-lesson"]'); await p.waitForTimeout(200);

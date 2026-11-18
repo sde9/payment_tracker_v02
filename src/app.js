@@ -254,54 +254,94 @@
 
   // ---------- рендер ----------
   var openHist = {}, openNotes = {}, rowCache = {}, histAll = {}, TAB = 'today';
+  var SEL = null, SORT = 'bal';
   function renderAll() {
     computeCal();
     renderSettings();
     renderRows();
+    renderList();
     renderMonth();
     renderDue();
     renderCal();
+    renderBalW();
+    renderHero();
     if ($('#dlgDay') && $('#dlgDay').open) renderDayCal();
-    renderGlance();
-    applyFilter();
     if (TAB === 'dash') renderDash();
     if (TAB === 'posts') renderPosts();
-  }
-
-  // Короткая сводка на «Сегодня»: кольцо, предоплата, долг, уроки по календарю.
-  function renderGlance() {
-    var td = $('#todayDate');
-    if (td) td.textContent = new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
-    var box = $('#glance'); if (!box) return;
-    var act = S.students.filter(function (s) { return s.arch !== '1'; });
-    var pre = 0, preN = 0, debt = 0, debtN = 0, okN = 0, t = thr();
-    act.forEach(function (s) {
-      if (s.bal > 0) { pre += s.bal * s.rate; preN += s.bal; }
-      if (s.bal < 0) { debt += -s.bal * s.rate; debtN++; }
-      if (s.bal > t) okN++;
-    });
-    var share = act.length ? okN / act.length : 0, C = 2 * Math.PI * 30;
-    var todayN = G.state === 'ok' ? weekEvents(1).length : -1;
-    box.innerHTML = '<div class="gl-top"><svg class="ring" width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">' +
-      '<circle class="bgc" cx="38" cy="38" r="30"/><circle class="fgc" cx="38" cy="38" r="30" stroke-dasharray="' + (C * share).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg>' +
-      '<div><div class="gl-big">' + okN + ' из ' + act.length + '</div><div class="gl-cap">оплачены вперёд</div></div></div>' +
-      '<ul class="gl-list">' +
-      '<li><span>Предоплачено</span><b class="ok">' + lessonsTxt(preN) + ' · ' + rub(pre) + '</b></li>' +
-      '<li><span>Долг</span><b' + (debt ? ' class="bad"' : '') + '>' + (debt ? rub(debt) + ' · ' + debtN + ' чел.' : 'нет') + '</b></li>' +
-      (todayN > -1 ? '<li><span>Сегодня по календарю</span><b>' + (todayN ? urokTxt(todayN) : 'уроков нет') + '</b></li>' : '') +
-      '</ul>';
-  }
-  function applyFilter() {
-    var q = (($('#q') || {}).value || '').trim().toLowerCase();
-    $$('#rows > .row').forEach(function (el) {
-      var st = stById(el.dataset.id);
-      var hit = !q || !st || (st.name || '').toLowerCase().indexOf(q) > -1 || (st.contact || '').toLowerCase().indexOf(q) > -1;
-      el.classList.toggle('nomatch', !hit);
-    });
   }
   function initials(name) {
     var w = String(name || '').trim().split(/\s+/).filter(Boolean);
     return ((w[0] || '?').charAt(0) + (w[1] ? w[1].charAt(0) : '')).toUpperCase();
+  }
+  function shortName(st) { return firstName(st); }
+  function balWord(b) { return b < 0 ? 'долг' : (b === 0 ? 'нет уроков' : plural(b, ['урок', 'урока', 'уроков'])); }
+  function sgn(n) { return String(n).replace('-', '−'); }
+
+  // ---------- «Сегодня» ----------
+  function renderHero() {
+    var h = $('#todayH'), p = $('#todaySub'); if (!h || !p) return;
+    var k = (MODE === 'server' && G.state === 'ok') ? unmarkedItems().length + unknownItems().length : 0;
+    var d = cap(new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }));
+    h.textContent = k ? 'Сегодня.' : 'Всё готово.';
+    p.textContent = d + '. ' + (k ? (k === 1 ? 'Одно дело ждёт вас.' : k + ' ' + plural(k, ['дело ждёт', 'дела ждут', 'дел ждут']) + ' вас.') : 'Можно выдохнуть.');
+  }
+  // Прошедшие события без ученика за две недели: «Чей это урок?».
+  function unknownItems() {
+    var now = Date.now(), from = now - 14 * 864e5;
+    return G.events.filter(function (ev) {
+      var t = new Date(ev.start).getTime();
+      return t < now && t > from && unlinkedEmails(ev).length && !L.studentsFor(ev, S.students).length;
+    }).slice(-3);
+  }
+  function renderBalW() {
+    var box = $('#balw'); if (!box) return;
+    var act = S.students.filter(function (s) { return s.arch !== '1'; });
+    box.innerHTML = '<p class="lbl" style="margin-bottom:6px"><span class="ic indigo">' + ICON.people + '</span>Остатки уроков</p>' +
+      (act.length ? act.map(function (st) {
+        return '<button class="bl" data-act="goto-stu" data-sid="' + attr(st.id) + '" data-state="' + stateFor(st.bal) + '"><i></i>' +
+          '<span class="bn">' + esc(st.name || 'без имени') + '</span><span class="bw">' + (st.bal <= 0 ? balWord(st.bal) : '') + '</span>' +
+          '<span class="bv">' + sgn(st.bal) + '</span></button>';
+      }).join('') : '<p class="gnote">Учеников пока нет.</p>');
+  }
+  var ICON = {
+    check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    alert: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 7v6M12 17h.01"/></svg>',
+    people: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="3"/><path d="M4 19c.6-2.8 2.6-4.3 5-4.3s4.4 1.5 5 4.3"/></svg>',
+    circle: '<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5"/></svg>',
+    done: '<svg width="56" height="56" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#34C759"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  };
+
+  // ---------- «Ученики»: список ----------
+  function sortedList() {
+    var q = (($('#q') || {}).value || '').trim().toLowerCase();
+    var list = S.students.filter(function (s) { return SORT === 'arch' ? s.arch === '1' : s.arch !== '1'; });
+    if (q) list = list.filter(function (s) { return ((s.name || '') + ' ' + (s.contact || '')).toLowerCase().indexOf(q) > -1; });
+    list = list.slice();
+    if (SORT === 'name') list.sort(function (a, b) { return (a.name || '').localeCompare(b.name || '', 'ru'); });
+    else if (SORT === 'next') list.sort(function (a, b) {
+      var x = nextFor(a), y = nextFor(b);
+      return (x ? x.start : '9') < (y ? y.start : '9') ? -1 : ((x ? x.start : '9') > (y ? y.start : '9') ? 1 : 0);
+    });
+    else if (SORT === 'bal') list.sort(function (a, b) { return a.bal - b.bal; });
+    return list;
+  }
+  function renderList() {
+    var box = $('#plist'); if (!box) return;
+    var list = sortedList();
+    if (!SEL || !stById(SEL) || (SORT !== 'arch' && stById(SEL).arch === '1')) SEL = list.length ? list[0].id : null;
+    $$('#sorts button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.sort === SORT ? 'true' : 'false'); });
+    box.innerHTML = list.length ? list.map(function (st) {
+      var nx = nextFor(st);
+      return '<button class="li" data-act="pick" data-sid="' + attr(st.id) + '" data-state="' + stateFor(st.bal) + '" data-arch="' + (st.arch === '1' ? '1' : '0') + '" aria-current="' + (st.id === SEL ? 'true' : 'false') + '">' +
+        '<span class="av" aria-hidden="true">' + esc(initials(st.name)) + '</span>' +
+        '<span class="lt"><b>' + esc(st.name || 'Без имени') + '</b><small>' + (nx ? esc(when(nx.start)) : esc(fmt(st.rate)) + ' ₽ за урок') + '</small></span>' +
+        '<span class="lv"><b>' + sgn(st.bal) + '</b><small>' + balWord(st.bal) + '</small></span></button>';
+    }).join('') : '<p class="pnone">' + (S.students.length ? 'Никого не нашлось' : 'Пока никого нет') + '</p>';
+    $$('#rows > .row').forEach(function (el) { el.classList.toggle('sel', el.dataset.id === SEL); });
+  }
+  function pick(id, open) {
+    SEL = id; renderList();
+    var v = $('#v-main'); if (v && open) v.dataset.detail = '1';
   }
 
   function setVal(sel, v) {
@@ -346,23 +386,29 @@
     var limit = histAll[st.id] ? list.length : 12;
     var rows = list.slice(0, limit).map(function (x) { return hRow(st, x.e, x.i, notes); }).join('');
     var more = list.length > limit ? '<button class="tiny ghost hmore" data-act="hist-all">Показать всю историю: ' + list.length + '</button>' : '';
+    var C = 2 * Math.PI * 42, frac = b < 0 ? 1 : Math.min(1, b / 10);
     return '<div class="row" data-id="' + attr(st.id) + '" data-state="' + state + '" data-arch="' + (st.arch === '1' ? '1' : '0') + '">' +
-      '<span class="av" aria-hidden="true">' + esc(initials(st.name)) + '</span>' +
-      '<div class="who"><span class="name" contenteditable="plaintext-only" data-ph="имя ученика">' + esc(st.name) + '</span>' +
-      '<span class="meta"><span class="ed rate" contenteditable="plaintext-only">' + esc(String(st.rate)) + '</span><span class="u">₽ за урок</span><span class="u">·</span>' +
-      '<span class="ed contact" contenteditable="plaintext-only" data-ph="контакт">' + esc(st.contact) + '</span></span>' +
-      '<span class="nx">' + (nx ? 'Следующий урок: ' + esc(when(nx.start)) : '') + '</span></div>' +
-      '<div class="bal"><span class="bal-n">' + fmt(b) + '</span><span class="bal-m">' + rub(b * st.rate) + '</span><span class="tag"></span></div>' +
-      '<div class="acts"><button class="tiny" data-act="lesson">Провёл</button><button class="tiny" data-act="cancel">Отмена</button>' +
-      '<button class="tiny" data-act="pay">Оплата</button><button class="tiny ghost" data-act="copy">Текст</button></div>' +
-      '<details class="hist" data-sid="' + attr(st.id) + '"' + (openHist[st.id] ? ' open' : '') + '><summary>История</summary><div class="histbody">' +
-      '<div class="snote" contenteditable="plaintext-only" data-ph="заметка об ученике">' + esc(st.note) + '</div>' +
-      '<div class="fld"><span class="lbl">Адреса в календаре</span><span class="ed emails" contenteditable="plaintext-only" data-ph="адрес, с которого ученик записывается">' + esc((st.emails || []).join(', ')) + '</span></div>' +
-      lastNotes(st, notes) +
+      '<div class="dh"><span class="av big" aria-hidden="true">' + esc(initials(st.name)) + '</span>' +
+      '<div class="who"><h2 class="name" contenteditable="plaintext-only" data-ph="Имя ученика">' + esc(st.name) + '</h2>' +
+      '<div class="meta"><span class="ed rate" contenteditable="plaintext-only">' + esc(String(st.rate)) + '</span><span class="u">₽ за урок</span><span class="u">·</span>' +
+      '<span class="ed contact" contenteditable="plaintext-only" data-ph="контакт">' + esc(st.contact) + '</span></div></div></div>' +
+      '<div class="acts"><button class="pro" data-act="lesson">Провёл урок</button><button data-act="pay">Записать оплату</button>' +
+      '<button data-act="copy">Напомнить…</button><button data-act="cancel">Отмена урока</button></div>' +
+      '<div class="dgrid">' +
+      '<div class="w full balw2"><svg width="104" height="104" viewBox="0 0 104 104" aria-hidden="true"><circle class="rt rtr" cx="52" cy="52" r="42"/>' +
+      '<circle class="rt rfg" cx="52" cy="52" r="42"' + (frac ? '' : ' opacity="0"') + ' stroke-dasharray="' + (C * frac).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90 52 52)"/></svg>' +
+      '<div class="bal"><span class="lbl">Остаток</span><span class="bal-n">' + fmt(b) + '</span><span class="bal-w">' + balWord(b) + '</span><span class="tag"></span></div>' +
+      '<div class="sum"><span class="lbl" style="justify-content:flex-end">Сумма</span><span class="bal-m">' + rub(b * st.rate) + '</span></div></div>' +
+      '<div class="w"><span class="lbl nxl">СЛЕДУЮЩИЙ УРОК</span><span class="nx">' + (nx ? esc(cap(when(nx.start))) : '') + '</span>' +
+      '<span class="nxs">' + (nx ? esc(L.eventName(nx.title) ? 'по календарю' : nx.title) : 'В календаре пока нет') + '</span>' +
+      '<div class="fld"><span class="flbl">Адреса в календаре</span><span class="ed emails" contenteditable="plaintext-only" data-ph="адрес, с которого ученик записывается">' + esc((st.emails || []).join(', ')) + '</span></div></div>' +
+      '<div class="w"><span class="lbl">Конспекты</span>' + (notes.length ? lastNotes(st, notes) : '<p class="nonotes">Конспектов пока нет.</p>') +
+      '<div class="snote" contenteditable="plaintext-only" data-ph="Заметка об ученике">' + esc(st.note) + '</div></div>' +
+      '<div class="w full hist" data-sid="' + attr(st.id) + '"><span class="lbl">История</span>' +
       '<div class="hrows">' + rows + '</div>' + more +
       '<div class="hbtns"><button class="tiny ghost" data-act="undo">Отменить последнюю запись</button>' +
-      '<button class="tiny ghost" data-act="arch"></button><button class="tiny ghost" data-act="del">Удалить</button></div>' +
-      '</div></details></div>';
+      '<button class="tiny ghost" data-act="arch"></button><button class="tiny ghost" data-act="del">Удалить ученика</button></div></div>' +
+      '</div></div>';
   }
   function noteBlock(n, key, label) {
     var url = /^https:\/\//.test(n.url || '') ? n.url : '';
@@ -371,11 +417,11 @@
   }
   function lastNotes(st, notes) {
     if (!notes.length) return '';
-    return '<div class="fld"><span class="lbl">Последние конспекты</span><div class="lastnotes">' +
+    return '<div class="lastnotes">' +
       notes.slice(0, 2).map(function (n) {
         var d = L.noteDate(n);
         return noteBlock(n, 'last:' + st.id + ':' + n.id, (d ? dayLabel(d) : '') + (n.start ? ', ' + hhmm(n.start) : ''));
-      }).join('') + '</div></div>';
+      }).join('') + '</div>';
   }
   function hRow(st, e, i, notes) {
     var note = notes.length ? L.noteForEntry(e, notes) : null;
@@ -419,8 +465,6 @@
       if (want !== el) { if (prev) prev.after(el); else host.prepend(el); }
       prev = el;
     });
-    var ar = $('#arch');
-    host.dataset.localArch = ar && ar.checked ? '1' : '0';
   }
 
   var mOff = 0;
@@ -430,16 +474,21 @@
     var key = y + '-' + L.pad(m + 1);
     var row = L.monthSeries(S, key, key)[0];
     var title = MONF[m] + (y !== new Date().getFullYear() ? (' ' + y) : '');
+    var co = 2 * Math.PI * 50, ci = 2 * Math.PI * 33;
+    var po = row.earned ? Math.min(1, row.paid / row.earned) : (row.paid ? 1 : 0);
+    var all = row.lessons + row.charged + row.free, pi = all ? row.lessons / all : 0;
     $('#month').innerHTML =
-      '<div class="month-nav"><button class="ghost tiny" data-act="m-prev" aria-label="Предыдущий месяц">‹</button>' +
-      '<b>' + title + '</b>' +
-      (mOff < 0 ? '<button class="ghost tiny" data-act="m-next" aria-label="Следующий месяц">›</button>' : '') +
-      '</div><div class="mstats">' +
-      '<span class="mstat"><i>получено</i><b>' + rub(row.paid) + '</b></span>' +
-      '<span class="mstat"><i>уроков</i><b>' + row.lessons + '</b></span>' +
-      '<span class="mstat"><i>отмен со списанием</i><b>' + row.charged + '</b></span>' +
-      '<span class="mstat"><i>отмен без списания</i><b>' + row.free + '</b></span>' +
-      '<span class="mstat"><i>проведено на сумму</i><b>' + rub(row.earned) + '</b></span></div>';
+      '<svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Получено ' + rub(row.paid) + ', проведено на ' + rub(row.earned) + '">' +
+      '<circle class="rt ro" cx="60" cy="60" r="50"/><circle class="rt rof" cx="60" cy="60" r="50"' + (po ? '' : ' opacity="0"') + ' stroke-dasharray="' + (co * po).toFixed(1) + ' ' + co.toFixed(1) + '" transform="rotate(-90 60 60)"/>' +
+      '<circle class="rt ri" cx="60" cy="60" r="33"/><circle class="rt rif" cx="60" cy="60" r="33"' + (pi ? '' : ' opacity="0"') + ' stroke-dasharray="' + (ci * pi).toFixed(1) + ' ' + ci.toFixed(1) + '" transform="rotate(-90 60 60)"/></svg>' +
+      '<div style="min-width:0"><div class="month-nav"><button data-act="m-prev" aria-label="Предыдущий месяц">‹</button><b>' + title + '</b>' +
+      (mOff < 0 ? '<button data-act="m-next" aria-label="Следующий месяц">›</button>' : '') + '</div>' +
+      '<div class="mbig">' + rub(row.earned) + '<small>проведено на сумму</small></div>' +
+      '<div class="mstats">' +
+      '<span class="mstat"><i class="g"></i>Получено <b>' + rub(row.paid) + '</b></span>' +
+      '<span class="mstat"><i class="b"></i>Уроков <b>' + row.lessons + '</b></span>' +
+      '<span class="mstat"><i class="o"></i>Отмен со списанием <b>' + row.charged + '</b></span>' +
+      '<span class="mstat"><i class="n"></i>Отмен без списания <b>' + row.free + '</b></span></div></div>';
   }
 
   function msgFor(st) {
@@ -455,17 +504,15 @@
   }
   function renderDue() {
     var t = thr();
-    var list = S.students.filter(function (s) { return s.arch !== '1' && s.bal <= t; });
+    var list = S.students.filter(function (s) { return s.arch !== '1' && s.bal <= t; }).sort(function (a, b) { return a.bal - b.bal; });
     var box = $('#due');
-    if (!list.length) { box.hidden = true; box.innerHTML = ''; return; }
-    box.hidden = false;
-    box.innerHTML = '<h2>Пора напомнить об оплате</h2><ul>' + list.map(function (st) {
-      var b = st.bal;
-      var s = b < 0 ? ('долг ' + lessonsTxt(Math.abs(b)) + ', ' + rub(Math.abs(b) * st.rate)) : (b === 0 ? 'занятия закончились' : ('осталось ' + lessonsTxt(b)));
-      var c = (st.contact || '').trim();
-      return '<li><b>' + esc(st.name) + '</b><em>' + s + (c ? (' · ' + esc(c)) : '') + '</em>' +
-        '<button class="tiny" data-act="copy-due" data-sid="' + attr(st.id) + '">Скопировать текст</button></li>';
-    }).join('') + '</ul>';
+    box.innerHTML = '<p class="lbl"><span class="ic red">' + ICON.alert + '</span>Ждут оплаты</p>' +
+      (list.length ? '<ul>' + list.map(function (st) {
+        var b = st.bal;
+        var why = b < 0 ? ('Долг ' + urokTxt(-b) + ' · ' + rub(-b * st.rate)) : (b === 0 ? 'Уроки закончились' : ('Осталось ' + urokTxt(b)));
+        return '<li><span class="dn"><b>' + esc(st.name) + '</b><span' + (b > 0 ? ' class="low"' : '') + '>' + why + '</span></span>' +
+          '<button data-act="copy-due" data-sid="' + attr(st.id) + '">Напомнить…</button></li>';
+      }).join('') + '</ul>' : '<p class="none">Долгов нет</p>');
   }
 
   // Строка события: по одной на каждого ученика события, время только у первой.
@@ -488,23 +535,34 @@
     if (t <= now) out += '<button class="tiny ghost" data-act="ev-skip">Не было</button>';
     return out;
   }
+  function lastTopic(st) {
+    if (!G.notes.length) return '';
+    var n = L.notesFor(st, G.notes)[0]; if (!n) return '';
+    var line = String(n.summary || '').split('\n').map(function (x) { return x.replace(/^[#>*\-\s]+/, '').replace(/\*\*/g, '').trim(); }).filter(Boolean)[0] || '';
+    return line.length > 70 ? line.slice(0, 68) + '…' : line;
+  }
   function eventBlock(ev, opts) {
     opts = opts || {};
+    var ce = opts.week ? ' ce' : '';
     var sts = opts.only ? [opts.only] : L.studentsFor(ev, S.students);
     var nm = L.eventName(ev.title);
     var group = !nm ? ev.title : '';
     var tm = opts.withDate ? dShort(L.localDate(ev.start)) + '<br>' + hhmm(ev.start) : hhmm(ev.start);
     var out = '';
     sts.forEach(function (st, i) {
-      out += '<div class="evr' + (i ? ' cont' : '') + '" data-ev="' + attr(ev.key) + '" data-sid="' + attr(st.id) + '">' +
-        '<span class="tm">' + (i ? '' : tm) + '</span><span class="ew"><b>' + esc(st.name) + '</b>' + (!i && group ? '<small>' + esc(group) + '</small>' : '') + '</span>' +
+      var lt = opts.week ? lastTopic(st) : '';
+      var tint = opts.week && st.bal <= thr() ? ' warn' : '';
+      out += '<div class="evr' + ce + tint + (i ? ' cont' : '') + '" data-ev="' + attr(ev.key) + '" data-sid="' + attr(st.id) + '">' +
+        '<span class="tm">' + (i ? '' : tm) + '</span><span class="ew"><b>' + esc(st.name) + '</b>' + (!i && group ? '<small>' + esc(group) + '</small>' : '') +
+        (opts.week && st.bal <= 0 ? '<small>' + (st.bal < 0 ? 'долг ' + fmt(-st.bal) : 'нет оплаченных уроков') + '</small>' : '') +
+        (lt ? '<small class="last">Прошлый раз: ' + esc(lt) + '</small>' : '') + '</span>' +
         '<span class="ea">' + evActions(ev, st) + '</span></div>';
     });
     if (!opts.only) {
       var un = unlinkedEmails(ev);
       if (un.length || !sts.length) {
         var who = (un.length === 1 && nm) ? nm : (un.length ? un.join(', ') : (nm || ev.title));
-        out += '<div class="evr' + (sts.length ? ' cont' : '') + '" data-ev="' + attr(ev.key) + '">' +
+        out += '<div class="evr' + ce + (opts.week ? ' unl' : '') + (sts.length ? ' cont' : '') + '" data-ev="' + attr(ev.key) + '">' +
           '<span class="tm">' + (sts.length ? '' : tm) + '</span><span class="ew"><b>' + esc(who) + '</b><small>' +
           (group && !sts.length ? esc(group) + ' · ' : '') + 'не привязан к ученику</small></span>' +
           '<span class="ea">' + (un.length ? '<button class="tiny" data-act="link">Привязать</button>' : '') + '</span></div>';
@@ -522,7 +580,7 @@
     var by = {}, order = [];
     evs.forEach(function (ev) { var d = L.localDate(ev.start); if (!by[d]) { by[d] = []; order.push(d); } by[d].push(ev); });
     return order.map(function (d) {
-      return '<div class="dayg"><div class="dl">' + cap(dayLabel(d)) + '</div>' + by[d].map(function (ev) { return eventBlock(ev); }).join('') + '</div>';
+      return '<div class="dayg"><div class="dl">' + cap(dayLabel(d)) + '</div>' + by[d].map(function (ev) { return eventBlock(ev, { week: 1 }); }).join('') + '</div>';
     }).join('');
   }
   function unmarkedItems() {
@@ -535,34 +593,95 @@
     items.sort(function (a, b) { return a.ev.start < b.ev.start ? 1 : -1; });
     return items;
   }
+  function markRow(x) {
+    var st = x.st, ev = x.ev;
+    return '<div class="evr mk" data-ev="' + attr(ev.key) + '" data-sid="' + attr(st.id) + '">' +
+      '<button class="chk" data-act="ev-lesson" aria-label="Провёл урок: ' + attr(st.name) + '" title="Провёл">' + ICON.circle + '</button>' +
+      '<span class="ew"><b>' + esc(st.name) + '</b><small>' + esc(cap(when(ev.start))) + (L.eventName(ev.title) ? '' : ' · ' + esc(ev.title)) + '</small></span>' +
+      '<span class="eff">' + sgn(st.bal) + ' → ' + sgn(st.bal - 1) + '</span>' +
+      '<button class="ghost tiny" data-act="ev-cancel">Отмена…</button><button class="ghost tiny" data-act="ev-skip">Не было</button></div>';
+  }
   function renderCal() {
     var wk = $('#week'), un = $('#unmarked');
-    if (MODE !== 'server' || G.state === 'off' || G.state === 'unknown') { wk.hidden = true; un.hidden = true; return; }
-    var head = '<div class="phrow"><h2 class="ph">Ближайшие уроки</h2><button class="tiny ghost" data-act="g-refresh">Обновить</button></div>';
-    wk.hidden = false;
-    if (!G.events.length && G.state !== 'ok') {
-      un.hidden = true;
-      wk.innerHTML = head + '<p class="gnote' + (G.state === 'error' ? ' err' : '') + '">' + esc(G.state === 'error' ? G.err : 'Загружаю календарь…') + '</p>';
+    var head = '<div class="whead"><p class="lbl"><span class="ic blue">' + ICON.check + '</span>Отметить уроки</p>';
+    if (MODE !== 'server' || G.state === 'off' || G.state === 'unknown') {
+      wk.hidden = true;
+      un.innerHTML = head + '</div><div class="alldone" style="margin:auto 0"><b>Отмечайте уроки вручную</b>' +
+        '<span>' + (MODE !== 'server' ? 'Календарь работает в версии на сервере.' : 'Google не подключён, уроки из календаря не подтягиваются.') + '</span>' +
+        '<p style="margin:16px 0 0"><button class="pro" data-act="day">Отметить день</button></p></div>';
       return;
     }
-    var items = unmarkedItems();
-    un.hidden = !items.length;
-    un.innerHTML = items.length ? '<div class="phrow"><h2 class="ph">Не отмечены: ' + urokTxt(items.length) + '</h2>' +
-      '<span class="gnote">прошли по календарю, а в истории их нет</span></div>' +
-      items.map(function (x) { return eventBlock(x.ev, { only: x.st, withDate: true }); }).join('') : '';
-    wk.innerHTML = head + weekHtml(7) + (G.state === 'error' ? '<p class="gnote err">' + esc(G.err) + '</p>' : '');
+    wk.hidden = false;
+    var items = G.state === 'ok' || G.events.length ? unmarkedItems() : [];
+    var unk = G.events.length ? unknownItems() : [];
+    var k = items.length + unk.length;
+    un.innerHTML = head + '<div class="bign">' + k + '</div></div><div class="marks">' +
+      items.map(markRow).join('') +
+      unk.map(function (ev) {
+        return '<div class="unk" data-ev="' + attr(ev.key) + '"><div class="ur"><span class="q">?</span><span><b>Чей это урок?</b><small>' +
+          esc(ev.title) + ' · ' + esc(when(ev.start)) + '</small></span><button class="ghost tiny" data-act="link" style="margin-left:auto">Выбрать ученика</button></div></div>';
+      }).join('') + '</div>' +
+      (items.length > 1 ? '<button class="bor" data-act="ev-all">Все прошли: отметить ' + items.length + '</button>' : '') +
+      (!k ? '<div class="alldone">' + ICON.done + '<b>Всё отмечено</b><span>' + esc(nextText()) + '</span></div>' : '') +
+      '<div class="wfoot">' + (G.state === 'error' ? '<span class="gnote err">' + esc(G.err) + '</span> ' : '') +
+      (k ? 'Круг списывает урок. «Не было» убирает событие без списания. ' : '') + '<button class="ghost tiny" data-act="day">Отметить день вручную</button></div>';
+
+    var today = todayISO(), now = Date.now();
+    var left = weekEvents(1).filter(function (ev) { return new Date(ev.start).getTime() > now; }).length;
+    var nd = new Date();
+    wk.innerHTML = '<div class="cal"><div class="cd"><div class="cdw">' + nd.toLocaleDateString('ru-RU', { weekday: 'long' }) + '</div>' +
+      '<div class="cdn">' + nd.getDate() + '</div><div class="cds">' + (left ? urokTxt(left) + ' впереди' : 'Сегодня уроков больше нет') + '</div>' +
+      '<button class="ghost tiny" data-act="g-refresh">Обновить</button></div>' +
+      '<div class="cl">' + (!G.events.length && G.state !== 'ok' ? '<p class="gnote' + (G.state === 'error' ? ' err' : '') + '">' + esc(G.state === 'error' ? G.err : 'Загружаю календарь…') + '</p>' : weekHtml(7)) + '</div></div>';
+    void today;
+  }
+  function nextText() {
+    var now = Date.now();
+    var ev = G.events.filter(function (e) { return new Date(e.start).getTime() > now; })[0];
+    return ev ? 'Следующий урок: ' + when(ev.start) : 'Ближайших уроков в календаре нет';
   }
 
   // ---------- диалоги ----------
   var curSid = null, curEv = null;
-  function openPay(st) {
+  function openPay(st, any) {
     curSid = st.id;
     $('#payWho').textContent = (st.name || '') + ' · ' + st.rate + ' ₽ за урок';
-    $('#payD').value = todayISO(); $('#payN').value = 5; $('#payS').value = Math.round(5 * st.rate); $('#payC').value = '';
-    $$('#packs button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.n === '5' ? 'true' : 'false'); });
-    $('#dlgPay').showModal();
+    $('#payD').value = todayISO(); $('#payN').value = 10; $('#payS').value = Math.round(10 * st.rate); $('#payC').value = '';
+    $$('#packs button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.n === '10' ? 'true' : 'false'); });
+    var box = $('#payWhoBox');
+    if (box) {
+      box.hidden = !any;
+      if (any) $('#payWhoChips').innerHTML = S.students.filter(function (s) { return s.arch !== '1'; }).slice().sort(function (a, b) { return a.bal - b.bal; })
+        .map(function (s) { return '<button data-act="pay-who" data-sid="' + attr(s.id) + '" aria-pressed="' + (s.id === st.id ? 'true' : 'false') + '">' + esc(shortName(s)) + (s.bal < 0 ? ' · долг' : '') + '</button>'; }).join('');
+    }
+    payPrev();
+    if (!$('#dlgPay').open) $('#dlgPay').showModal();
   }
-  function syncPaySum() { var st = stById(curSid); if (st) $('#payS').value = Math.round(num($('#payN').value) * st.rate); }
+  function openPayAny() {
+    var act = S.students.filter(function (s) { return s.arch !== '1'; }).sort(function (a, b) { return a.bal - b.bal; });
+    if (!act.length) { toast('Сначала добавьте ученика'); return; }
+    openPay(act[0], true);
+  }
+  function payPrev() {
+    var st = stById(curSid), el = $('#payPrev'); if (!st || !el) return;
+    var n = Math.round(num($('#payN').value)), cur = st.bal, after = cur + n;
+    el.textContent = n > 0 ? (urokTxt(n) + ' по ' + rub(st.rate) + '. ' + (cur < 0 ? urokTxt(Math.min(n, -cur)) + ' закроют долг. ' : '') + 'Станет: ' + sgn(after) + ' ' + balWord(after) + '.') : 'Укажите количество уроков.';
+  }
+  function syncPaySum() { var st = stById(curSid); if (st) $('#payS').value = Math.round(num($('#payN').value) * st.rate); payPrev(); }
+  var remSid = null;
+  function openRemind(st) {
+    remSid = st.id;
+    $('#remWho').textContent = 'Напоминание: ' + (st.name || '');
+    $('#remText').value = msgFor(st);
+    $('#dlgRemind').showModal();
+  }
+  // Действие с кнопкой «Вернуть» в уведомлении: снимок до изменения.
+  var undoSnap = null;
+  function withUndo(msg, fn) {
+    undoSnap = JSON.stringify(snapshot());
+    commit(fn);
+    toast(msg, true);
+  }
   function openCancel(st, ev) {
     curSid = st.id; curEv = ev || null;
     $('#cxWho').textContent = st.name || '';
@@ -572,6 +691,8 @@
       info = 'Урок ' + when(ev.start) + '. Если ученик предупредил до ' + (L.localDate(dl) === L.localDate(ev.start) ? hhmm(dl.toISOString()) : when(dl.toISOString())) + ', урок не списывается.';
     }
     $('#cxInfo').textContent = info;
+    var late = ev ? (new Date(ev.start).getTime() - Date.now() < 6 * 3600e3) : false;
+    $$('#dlgCancel .opt').forEach(function (o) { o.classList.toggle('rec', (o.dataset.act === 'cx-charge') === late); });
     $('#cxD').value = ev ? L.localDate(ev.start) : todayISO();
     $('#dlgCancel').showModal();
   }
@@ -900,10 +1021,12 @@
   function postById(id) { return (G.posts || []).filter(function (p) { return p.id === id; })[0]; }
 
   // ---------- мелочи ----------
-  function toast(msg) {
+  function toast(msg, undo) {
     var old = document.getElementById('toast'); if (old) old.remove();
-    var t = document.createElement('div'); t.className = 'toast'; t.id = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
-    document.body.appendChild(t); setTimeout(function () { if (t.parentNode) t.remove(); }, 2600);
+    var t = document.createElement('div'); t.className = 'toast' + (undo ? ' u' : ''); t.id = 'toast'; t.setAttribute('role', 'status');
+    var sp = document.createElement('span'); sp.textContent = msg; t.appendChild(sp);
+    if (undo) { var bt = document.createElement('button'); bt.dataset.act = 'toast-undo'; bt.textContent = 'Вернуть'; t.appendChild(bt); }
+    document.body.appendChild(t); setTimeout(function () { if (t.parentNode) t.remove(); }, undo ? 6000 : 2600);
   }
   function copyText(s, okMsg) {
     function fallback() {
@@ -976,7 +1099,7 @@
   // ---------- события ----------
   function rowSt(el) { var r = el.closest('.row'); return r ? stById(r.dataset.id) : null; }
   function evSt(el) {
-    var r = el.closest('.evr');
+    var r = el.closest('.evr') || el.closest('[data-ev]');
     return r ? { ev: evByKey(r.dataset.ev), st: r.dataset.sid ? stById(r.dataset.sid) : null } : { ev: null, st: null };
   }
   var TABS = ['today', 'main', 'dash', 'posts', 'set'];
@@ -984,6 +1107,13 @@
     TAB = t;
     $$('.tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'); });
     TABS.forEach(function (k) { var v = $('#v-' + k); if (v) v.hidden = k !== t; });
+    var ha = $('#hact');
+    if (ha) {
+      ha.hidden = !(t === 'today' || t === 'main');
+      ha.dataset.act = t === 'main' ? 'add' : 'pay-any';
+      ha.textContent = t === 'main' ? 'Новый ученик' : 'Записать оплату';
+    }
+    var vm = $('#v-main'); if (vm && t !== 'main') vm.dataset.detail = '0';
     try { localStorage.setItem('uroki.tab', t); } catch (e) { /* не страшно */ }
     renderAll();
     if (t === 'set') loadDays();
@@ -996,6 +1126,28 @@
     if (act === 'm-prev') { mOff--; renderMonth(); return; }
     if (act === 'm-next') { if (mOff < 0) { mOff++; renderMonth(); } return; }
     if (act === 'add') { addStudent(); return; }
+    if (act === 'pay-any') { openPayAny(); return; }
+    if (act === 'pay-who') { var pw = stById(b.dataset.sid); if (pw) openPay(pw, true); return; }
+    if (act === 'pick') { pick(b.dataset.sid, true); window.scrollTo(0, 0); return; }
+    if (act === 'back') { var vb = $('#v-main'); if (vb) vb.dataset.detail = '0'; return; }
+    if (act === 'sort') { SORT = b.dataset.sort; SEL = null; renderList(); return; }
+    if (act === 'goto-stu') { SORT = stById(b.dataset.sid) && stById(b.dataset.sid).arch === '1' ? 'arch' : SORT; SEL = b.dataset.sid; setTab('main'); pick(b.dataset.sid, true); return; }
+    if (act === 'toast-undo') {
+      var snap = undoSnap; undoSnap = null; if (!snap) return;
+      var nd = norm(snap); if (!nd) return;
+      commit(function () { S = nd; }); toast('Вернул как было'); return;
+    }
+    if (act === 'remind-copy') { var rs = stById(remSid); copyText($('#remText').value, 'Текст скопирован'); if (rs) $('#dlgRemind').close(); return; }
+    if (act === 'remind-wa') {
+      var wt = $('#remText').value, ws = stById(remSid), ph = ws ? String(ws.contact || '').replace(/[^\d]/g, '') : '';
+      window.open('https://wa.me/' + (ph.length >= 8 ? ph : '') + '?text=' + encodeURIComponent(wt), '_blank', 'noopener');
+      return;
+    }
+    if (act === 'ev-all') {
+      var its = unmarkedItems();
+      withUndo('Отмечено уроков: ' + its.length, function () { its.forEach(function (x) { doOp(x.st, 'lesson', L.localDate(x.ev.start), x.ev); }); });
+      return;
+    }
     if (act === 'day') { openDay(); return; }
     if (act === 'export') { download('uroki-' + todayISO() + '.json', JSON.stringify(snapshot(), null, 2)); toast('Копия скачана'); return; }
     if (act === 'restore') { restoreLocal(); return; }
@@ -1013,21 +1165,21 @@
     }
     if (act === 'logout') { logout(); return; }
     if (act === 'close') { var dg = b.closest('dialog'); if (dg) dg.close(); return; }
-    if (act === 'copy-due') { var r = stById(b.dataset.sid); if (r) copyText(msgFor(r), 'Текст скопирован'); return; }
+    if (act === 'copy-due') { var r = stById(b.dataset.sid); if (r) openRemind(r); return; }
     if (act === 'pay-ok') {
       var ps = stById(curSid); if (!ps) return;
       var cnt = Math.round(num($('#payN').value)), sum = Math.round(num($('#payS').value));
       if (!cnt) { toast('Укажите количество уроков'); return; }
       var dt = $('#payD').value || todayISO(), cm = ($('#payC').value || '').trim();
-      commit(function () { doPay(ps, cnt, sum, dt, cm); });
-      $('#dlgPay').close(); toast('Оплата записана'); return;
+      $('#dlgPay').close();
+      withUndo(shortName(ps) + ': +' + urokTxt(cnt) + ', ' + rub(sum), function () { doPay(ps, cnt, sum, dt, cm); }); return;
     }
     if (act === 'cx-free' || act === 'cx-charge') {
       var cs = stById(curSid); if (!cs) return;
       var dt3 = $('#cxD').value || todayISO(), k = act === 'cx-charge' ? 'cancel-charged' : 'cancel-free', ev3 = curEv;
-      commit(function () { doOp(cs, k, dt3, ev3); });
       curEv = null;
-      $('#dlgCancel').close(); toast(act === 'cx-charge' ? 'Урок списан' : 'Урок сохранён'); return;
+      $('#dlgCancel').close();
+      withUndo(shortName(cs) + ': ' + (act === 'cx-charge' ? 'отмена, урок списан' : 'отмена, урок сохранён'), function () { doOp(cs, k, dt3, ev3); }); return;
     }
     if (act === 'd-lesson' || act === 'd-charge' || act === 'd-free') {
       var dr = b.closest('.dayrow'); if (!dr) return;
@@ -1042,7 +1194,7 @@
     if (act === 'ev-lesson' || act === 'ev-cancel' || act === 'ev-skip' || act === 'ev-unskip') {
       var x = evSt(b); if (!x.ev || !x.st) return;
       var key = x.ev.key + '|' + x.st.id;
-      if (act === 'ev-lesson') { commit(function () { doOp(x.st, 'lesson', L.localDate(x.ev.start), x.ev); }); toast('Занятие записано'); }
+      if (act === 'ev-lesson') withUndo('Списано: ' + shortName(x.st) + ', ' + sgn(x.st.bal) + ' → ' + sgn(x.st.bal - 1), function () { doOp(x.st, 'lesson', L.localDate(x.ev.start), x.ev); });
       else if (act === 'ev-cancel') openCancel(x.st, x.ev);
       else if (act === 'ev-skip') { commit(function () { S.dismissed[key] = 1; }); toast('Отмечено: урока не было'); }
       else commit(function () { delete S.dismissed[key]; });
@@ -1078,10 +1230,10 @@
     }
     if (act === 'hist-all') { if (st) { histAll[st.id] = 1; renderRows(); } return; }
     if (!st) return;
-    if (act === 'lesson') { commit(function () { doOp(st, 'lesson', todayISO()); }); toast('Занятие записано'); return; }
+    if (act === 'lesson') { withUndo('Урок записан: ' + sgn(st.bal) + ' → ' + sgn(st.bal - 1), function () { doOp(st, 'lesson', todayISO()); }); return; }
     if (act === 'cancel') { openCancel(st, null); return; }
     if (act === 'pay') { openPay(st); return; }
-    if (act === 'copy') { copyText(msgFor(st), 'Текст скопирован'); return; }
+    if (act === 'copy') { openRemind(st); return; }
     if (act === 'undo') {
       if (!needSecond('undo:' + st.id, 'Отменить последнюю запись? Нажмите ещё раз')) return;
       commit(function () { if (!doUndo(st)) toast('История пуста'); });
@@ -1099,8 +1251,10 @@
     commit(function () {
       S.students.push({ id: id, arch: '0', name: '', rate: Math.round(num(S.defRate)) || 2000, contact: '', note: '', bal: 0, emails: [], since: todayISO(), h: [] });
     });
+    if (TAB !== 'main') setTab('main');
+    SORT = 'bal'; pick(id, true);
     var row = $('#rows .row[data-id="' + id + '"]');
-    if (row) { var n = $('.name', row); n.focus(); row.scrollIntoView({ block: 'center' }); }
+    if (row) { var n = $('.name', row); n.focus(); }
   }
   function restoreLocal() {
     var raw = null; try { raw = localStorage.getItem('uroki.backup'); } catch (e) { /* нет доступа */ }
@@ -1176,7 +1330,7 @@
     });
     document.addEventListener('input', function (e) {
       var t = e.target;
-      if (t.id === 'q') { applyFilter(); return; }
+      if (t.id === 'q') { SEL = null; renderList(); return; }
       if (t.id === 'payN') {
         syncPaySum();
         $$('#packs button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.n === String(Math.round(num($('#payN').value))) ? 'true' : 'false'); });

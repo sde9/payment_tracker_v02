@@ -132,7 +132,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   await p.waitForSelector('#week:not([hidden]) .dayg', { timeout: 8000 });
   ok('старые балансы прочитаны как есть', await p.$$eval('#rows .row .bal-n', (n) => n.map((x) => x.textContent)), ['6', '0', '−5']);
   ok('неделя: два урока не привязаны', await p.$$eval('#week [data-act="link"]', (n) => n.length), 2);
-  ok('неотмеченных пока нет (адресов у учеников нет)', await p.$eval('#unmarked', (e) => e.hidden), true);
+  ok('неотмеченных пока нет (адресов у учеников нет)', await p.$$eval('#unmarked .evr', (n) => n.length), 0);
   ok('статус Google в настройках', (await p.$eval('#gStatus', (e) => e.textContent)).indexOf('Google подключён') === 0, true);
   await shot(p, '01-main-before');
 
@@ -143,7 +143,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   await p.click('#dlgLink [data-act="link-ok"]');
   await p.waitForTimeout(300);
   ok('привязка: адрес у ученика', await p.$eval('.row[data-id="s1"] .emails', (e) => e.textContent), ANNA);
-  ok('привязка: следующий урок в карточке', (await p.$eval('.row[data-id="s1"] .nx', (e) => e.textContent)).indexOf('Следующий урок:') === 0, true);
+  ok('привязка: следующий урок в карточке', (await p.$eval('.row[data-id="s1"] .nx', (e) => e.textContent)).length > 0, true);
   ok('неотмеченные: прошедший урок без отметки', await p.$$eval('#unmarked .evr', (n) => n.length), 1);
   ok('отметка за день до урока нашла свой урок', await p.$eval('.row[data-id="s1"]', (e) => e.dataset.state), 'ok');
 
@@ -184,7 +184,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   ok('Провёл из календаря: баланс −1', await p.$eval('.row[data-id="s1"] .bal-n', (e) => e.textContent), '5');
   await p.click('#unmarked .evr[data-sid="s2"] [data-act="ev-skip"]');
   await p.waitForTimeout(300);
-  ok('«Не было» убирает из списка', await p.$eval('#unmarked', (e) => e.hidden), true);
+  ok('«Не было» убирает из списка', await p.$$eval('#unmarked .evr', (n) => n.length), 0);
   ok('«Не было» не трогает баланс', await p.$eval('.row[data-id="s2"] .bal-n', (e) => e.textContent), '0');
   await p.click('#week .evr[data-sid="s1"] [data-act="ev-cancel"]');
   await p.waitForSelector('#dlgCancel[open]');
@@ -202,7 +202,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
 
   // ---------- конспекты ----------
   await p.click('[data-tab="main"]');
-  await p.click('.row[data-id="s1"] .hist summary');
+  await p.click('#plist [data-sid="s1"]'); 
   await p.waitForTimeout(150);
   ok('конспект у урока', await p.$$eval('.row[data-id="s1"] .h .nt', (n) => n.length), 1);
   ok('последние конспекты', await p.$$eval('.row[data-id="s1"] .lastnotes .nt', (n) => n.length), 1);

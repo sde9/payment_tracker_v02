@@ -148,7 +148,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   ok('отметка за день до урока нашла свой урок', await p.$eval('.row[data-id="s1"]', (e) => e.dataset.state), 'ok');
 
   // ---------- импорт истории ----------
-  await p.click('#settings > summary');
+  await p.click('[data-tab="set"]');
   await p.click('[data-act="cal-import"]');
   await p.waitForSelector('#dlgImport[open]');
   await p.fill('#impFrom', L.addDays(TODAY, -120));
@@ -176,6 +176,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   ok('импорт: Катя в архиве', st1.students.find((s) => s.emails.indexOf(KATE) > -1).arch, '1');
 
   // ---------- отметки из календаря ----------
+  await p.click('[data-tab="today"]');
   ok('неотмеченные: Анна и Марк', await p.$$eval('#unmarked .evr b', (n) => n.map((x) => x.textContent).sort()), ['Анна Петрова', 'Марк Орлов']);
   await shot(p, '03-main-after-import');
   await p.click('#unmarked .evr[data-sid="s1"] [data-act="ev-lesson"]');
@@ -200,6 +201,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   ok('в хранилище «не было»', Object.keys(st2.dismissed), [EVENTS[5].key + '|s2']);
 
   // ---------- конспекты ----------
+  await p.click('[data-tab="main"]');
   await p.click('.row[data-id="s1"] .hist summary');
   await p.waitForTimeout(150);
   ok('конспект у урока', await p.$$eval('.row[data-id="s1"] .h .nt', (n) => n.length), 1);
@@ -242,7 +244,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
 
   // ---------- телефон и тёмная тема ----------
   await p.setViewportSize({ width: 390, height: 900 });
-  for (const tab of ['main', 'dash', 'posts']) {
+  for (const tab of ['today', 'main', 'dash', 'posts', 'set']) {
     await p.click('[data-tab="' + tab + '"]');
     await p.waitForTimeout(250);
     ok('телефон без горизонтальной прокрутки: ' + tab, await p.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true);

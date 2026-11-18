@@ -137,7 +137,7 @@
       .then(function () {
         saving = false; setChip('server');
         if (dirty) flush();
-        else if ($('#settings') && $('#settings').open) { clearTimeout(daysTimer); daysTimer = setTimeout(loadDays, 400); }
+        else if (TAB === 'set') { clearTimeout(daysTimer); daysTimer = setTimeout(loadDays, 400); }
       })
       .catch(function (e) {
         saving = false; dirty = true;
@@ -253,7 +253,7 @@
   }
 
   // ---------- рендер ----------
-  var openHist = {}, openNotes = {}, rowCache = {}, histAll = {}, TAB = 'main';
+  var openHist = {}, openNotes = {}, rowCache = {}, histAll = {}, TAB = 'today';
   function renderAll() {
     computeCal();
     renderSettings();
@@ -262,8 +262,46 @@
     renderDue();
     renderCal();
     if ($('#dlgDay') && $('#dlgDay').open) renderDayCal();
+    renderGlance();
+    applyFilter();
     if (TAB === 'dash') renderDash();
     if (TAB === 'posts') renderPosts();
+  }
+
+  // Короткая сводка на «Сегодня»: кольцо, предоплата, долг, уроки по календарю.
+  function renderGlance() {
+    var td = $('#todayDate');
+    if (td) td.textContent = new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+    var box = $('#glance'); if (!box) return;
+    var act = S.students.filter(function (s) { return s.arch !== '1'; });
+    var pre = 0, preN = 0, debt = 0, debtN = 0, okN = 0, t = thr();
+    act.forEach(function (s) {
+      if (s.bal > 0) { pre += s.bal * s.rate; preN += s.bal; }
+      if (s.bal < 0) { debt += -s.bal * s.rate; debtN++; }
+      if (s.bal > t) okN++;
+    });
+    var share = act.length ? okN / act.length : 0, C = 2 * Math.PI * 30;
+    var todayN = G.state === 'ok' ? weekEvents(1).length : -1;
+    box.innerHTML = '<div class="gl-top"><svg class="ring" width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">' +
+      '<circle class="bgc" cx="38" cy="38" r="30"/><circle class="fgc" cx="38" cy="38" r="30" stroke-dasharray="' + (C * share).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg>' +
+      '<div><div class="gl-big">' + okN + ' из ' + act.length + '</div><div class="gl-cap">оплачены вперёд</div></div></div>' +
+      '<ul class="gl-list">' +
+      '<li><span>Предоплачено</span><b class="ok">' + lessonsTxt(preN) + ' · ' + rub(pre) + '</b></li>' +
+      '<li><span>Долг</span><b' + (debt ? ' class="bad"' : '') + '>' + (debt ? rub(debt) + ' · ' + debtN + ' чел.' : 'нет') + '</b></li>' +
+      (todayN > -1 ? '<li><span>Сегодня по календарю</span><b>' + (todayN ? urokTxt(todayN) : 'уроков нет') + '</b></li>' : '') +
+      '</ul>';
+  }
+  function applyFilter() {
+    var q = (($('#q') || {}).value || '').trim().toLowerCase();
+    $$('#rows > .row').forEach(function (el) {
+      var st = stById(el.dataset.id);
+      var hit = !q || !st || (st.name || '').toLowerCase().indexOf(q) > -1 || (st.contact || '').toLowerCase().indexOf(q) > -1;
+      el.classList.toggle('nomatch', !hit);
+    });
+  }
+  function initials(name) {
+    var w = String(name || '').trim().split(/\s+/).filter(Boolean);
+    return ((w[0] || '?').charAt(0) + (w[1] ? w[1].charAt(0) : '')).toUpperCase();
   }
 
   function setVal(sel, v) {
@@ -309,6 +347,7 @@
     var rows = list.slice(0, limit).map(function (x) { return hRow(st, x.e, x.i, notes); }).join('');
     var more = list.length > limit ? '<button class="tiny ghost hmore" data-act="hist-all">Показать всю историю: ' + list.length + '</button>' : '';
     return '<div class="row" data-id="' + attr(st.id) + '" data-state="' + state + '" data-arch="' + (st.arch === '1' ? '1' : '0') + '">' +
+      '<span class="av" aria-hidden="true">' + esc(initials(st.name)) + '</span>' +
       '<div class="who"><span class="name" contenteditable="plaintext-only" data-ph="имя ученика">' + esc(st.name) + '</span>' +
       '<span class="meta"><span class="ed rate" contenteditable="plaintext-only">' + esc(String(st.rate)) + '</span><span class="u">₽ за урок</span><span class="u">·</span>' +
       '<span class="ed contact" contenteditable="plaintext-only" data-ph="контакт">' + esc(st.contact) + '</span></span>' +
@@ -707,7 +746,7 @@
 
   // ---------- обзор ----------
   function renderDash() {
-    var v = $('#v-dash'); if (!v) return;
+    var v = $('#dashBody'); if (!v) return;
     var today = todayISO(), cur = L.ym(today);
     var y = +cur.slice(0, 4), m = +cur.slice(5, 7);
     var from12 = (m === 12 ? y : y - 1) + '-' + L.pad(m === 12 ? 1 : m + 1);
@@ -835,7 +874,7 @@
   // ---------- посты ----------
   var POST_ST = ['черновик', 'одобрен', 'опубликован', 'отклонён'];
   function renderPosts() {
-    var v = $('#v-posts'); if (!v || TAB !== 'posts') return;
+    var v = $('#postsBody'); if (!v || TAB !== 'posts') return;
     var head = '<div class="phrow"><h2 class="ph">Черновики для Instagram</h2>' + (MODE === 'server' ? '<button class="tiny ghost" data-act="posts-refresh">Обновить</button>' : '') + '</div>' +
       '<p class="gnote">Черновики пишет еженедельная задача по конспектам уроков. В них нет имён, оценок и личных подробностей учеников: только тема и факты. Поставьте «одобрен», и пост встанет в очередь: бот публикует в Telegram-канал по одному посту, самый старый первым (по умолчанию раз в день около 19:00). Instagram публикуете сами.</p>';
     if (MODE !== 'server') { v.innerHTML = head + '<p class="gnote">Посты работают в версии на сервере.</p>'; return; }
@@ -940,12 +979,14 @@
     var r = el.closest('.evr');
     return r ? { ev: evByKey(r.dataset.ev), st: r.dataset.sid ? stById(r.dataset.sid) : null } : { ev: null, st: null };
   }
+  var TABS = ['today', 'main', 'dash', 'posts', 'set'];
   function setTab(t) {
     TAB = t;
     $$('.tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'); });
-    ['main', 'dash', 'posts'].forEach(function (k) { var v = $('#v-' + k); if (v) v.hidden = k !== t; });
+    TABS.forEach(function (k) { var v = $('#v-' + k); if (v) v.hidden = k !== t; });
     try { localStorage.setItem('uroki.tab', t); } catch (e) { /* не страшно */ }
     renderAll();
+    if (t === 'set') loadDays();
   }
   function onClick(e) {
     var b = e.target.closest ? e.target.closest('button[data-act],button[data-tab]') : null;
@@ -1101,7 +1142,6 @@
       var t = e.target;
       if (t.classList && t.classList.contains('hist')) { if (t.open) openHist[t.dataset.sid] = 1; else delete openHist[t.dataset.sid]; }
       if (t.classList && t.classList.contains('nt') && t.dataset.k) { if (t.open) openNotes[t.dataset.k] = 1; else delete openNotes[t.dataset.k]; }
-      if (t.id === 'settings' && t.open) loadDays();
     }, true);
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && e.target.matches && e.target.matches('.name,.rate,.contact,.h-note,.emails')) { e.preventDefault(); e.target.blur(); }
@@ -1136,6 +1176,7 @@
     });
     document.addEventListener('input', function (e) {
       var t = e.target;
+      if (t.id === 'q') { applyFilter(); return; }
       if (t.id === 'payN') {
         syncPaySum();
         $$('#packs button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.n === String(Math.round(num($('#payN').value))) ? 'true' : 'false'); });
@@ -1234,7 +1275,7 @@
   }
   function init() {
     var saved = null; try { saved = localStorage.getItem('uroki.tab'); } catch (e) { /* нет доступа */ }
-    if (saved === 'dash' || saved === 'posts') setTab(saved); else renderAll();
+    setTab(TABS.indexOf(saved) > -1 ? saved : 'today');
     startServer();
   }
   if (!window.__urokiBound) { window.__urokiBound = true; bind(); }

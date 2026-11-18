@@ -76,6 +76,7 @@ const waitChip = (p, needle) =>
   ok('индикатор после загрузки', await chip(p), 'сохранено на сервере');
   ok('снимок залит в хранилище', store.has('uroki:state'), true);
   ok('учеников в хранилище', JSON.parse(store.get('uroki:state')).students.length, 5);
+  await p.click('[data-tab="main"]');
 
   await p.click('.row[data-id="s1"] button[data-act="lesson"]');
   await p.waitForTimeout(1400);
@@ -153,7 +154,7 @@ const waitChip = (p, needle) =>
   process.env.APP_PASSWORD = 'ponyclub-2026';
 
   // Выход.
-  await p3.click('.settings > summary');
+  await p3.click('[data-tab="set"]');
   await p3.click('[data-act="logout"]');
   await p3.waitForTimeout(150);
   ok('выход не срабатывает с первого клика', await p3.$eval('#gate', (e) => e.hidden), true);

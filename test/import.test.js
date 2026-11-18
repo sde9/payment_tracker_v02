@@ -13,7 +13,7 @@ const {chromium}=require('playwright');
   async function paste(json){
     await p.evaluate(()=>{try{localStorage.clear()}catch(e){}});
     await p.reload(); await p.waitForTimeout(400);
-    await p.click('.settings > summary');
+    await p.click('[data-tab="set"]');
     await p.click('[data-act="paste"]');
     await p.waitForTimeout(120);
     await p.fill('#pasteBox', json);

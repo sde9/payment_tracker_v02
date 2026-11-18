@@ -11,6 +11,7 @@ const {chromium}=require('playwright');
   await p.evaluate(()=>{try{localStorage.clear();}catch(e){}});
   await p.reload();
   await p.waitForTimeout(700);
+  await p.click('[data-tab="main"]'); await p.waitForTimeout(150);
 
   const bal=async id=>p.$eval('.row[data-id="'+id+'"] .bal-n',e=>e.textContent);
   const money=async id=>p.$eval('.row[data-id="'+id+'"] .bal-m',e=>e.textContent);

@@ -445,18 +445,52 @@ textarea:focus{background:var(--surface)}
 .two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px}
 
 /* ---------- посты ---------- */
-.posts{display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:16px; align-items:start}
-.post{padding:20px 22px; display:flex; flex-direction:column; gap:10px; min-width:0}
-.post header{display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
-.post h3{margin:0; font-weight:600; font-size:19px; letter-spacing:-.02em}
-.post .meta2{font-size:13px; color:var(--ink-2)}
-.slides{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:4px; font-size:14px}
-.cap{white-space:pre-wrap; font-size:14px; line-height:1.55; background:var(--surface-2); border-radius:12px; padding:10px 12px; overflow-wrap:anywhere}
-.tags{font-size:13px; color:var(--accent-ink)}
-.pst{font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:var(--surface-2); color:var(--ink-2)}
+.ptop{display:flex; flex-wrap:wrap; gap:20px; align-items:stretch; padding-top:36px}
+.ptop .pt{flex:1 1 360px}
+.ptop h1{margin:0; font-size:52px; font-weight:700; letter-spacing:-.035em; line-height:1.02}
+.ptop p{margin:8px 0 0; font-size:19px; color:var(--ink-2); max-width:520px}
+.tgq{flex:1 1 360px; display:flex; gap:16px; align-items:center}
+.tgq .tgi{width:56px; height:56px; border-radius:16px; background:#2AABEE; display:flex; align-items:center; justify-content:center; flex:none}
+.tgq .tgt{flex:1; min-width:0}
+.tgq .tgt b{display:block; font-size:18px; font-weight:600; letter-spacing:-.01em; margin-top:2px}
+.tgq .tgt span{display:block; font-size:14px; color:var(--ink-2); margin-top:2px}
+.pfil{display:flex; flex-wrap:wrap; gap:8px}
+.pfil button{min-height:32px; font-size:13px; padding:0 12px; background:var(--surface); color:var(--ink)}
+.pfil button[aria-pressed="true"]{background:var(--ink); color:var(--surface)}
+.pfil button i{font-style:normal; opacity:.6; margin-left:4px}
+.posts{display:flex; flex-direction:column; gap:20px}
+.post{display:flex; flex-wrap:wrap; gap:24px}
+.post .car{flex:0 1 320px; min-width:260px}
+.slides{list-style:none; margin:0; padding:0; position:relative; aspect-ratio:4 / 5; border-radius:20px; overflow:hidden; background:var(--sbg,#E8F1FF); color:var(--sfg,#0B3D91)}
+.slides li{position:absolute; inset:0; padding:28px; display:none; flex-direction:column; justify-content:center; font-size:26px; font-weight:700; letter-spacing:-.02em; line-height:1.15; white-space:pre-line; overflow-wrap:anywhere}
+.slides li.on{display:flex}
+.slides .sno{position:absolute; top:14px; right:16px; font-size:12px; font-weight:600; opacity:.7}
+.car .arws{position:relative; margin-top:-50px; padding:0 14px; display:flex; justify-content:space-between; pointer-events:none}
+.car .arws button{pointer-events:auto; width:36px; height:36px; min-height:36px; padding:0; border-radius:99px; background:rgba(255,255,255,.9)!important; color:#1D1D1F; font-size:18px}
+.car .dots{display:flex; justify-content:center; gap:6px; margin-top:24px}
+.car .dots i{width:6px; height:6px; border-radius:99px; background:#C7C7CC}
+.car .dots i.on{background:var(--ink)}
+.post .pb{flex:1 1 380px; min-width:0; display:flex; flex-direction:column; gap:12px}
+.post .pm{display:flex; flex-wrap:wrap; align-items:center; gap:10px; font-size:13px; color:var(--ink-2)}
+.post h3{margin:0; font-size:26px; font-weight:700; letter-spacing:-.02em}
+.pseg{display:flex; gap:2px; padding:2px; border-radius:9px; background:rgba(120,120,128,.12); align-self:flex-start}
+.pseg button{min-height:28px; padding:0 14px; border-radius:7px; font-size:13px; background:transparent; color:var(--ink)}
+.pseg button[aria-selected="true"]{background:var(--surface); box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.cap{background:var(--surface-2); border-radius:16px; padding:14px 16px; font-size:15px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere}
+.tags{color:var(--accent-ink); margin-top:8px}
+.tgbox{background:#DCE8F2; border-radius:16px; padding:14px}
+.tgbox .bub{background:#FFFFFF; color:#1D1D1F; border-radius:14px 14px 14px 4px; padding:12px 14px; font-size:15px; line-height:1.45; white-space:pre-wrap; max-width:460px; overflow-wrap:anywhere}
+.tgbox small{display:block; font-size:12px; color:#6E6E73; margin:6px 4px 0}
+.pact{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:auto; padding-top:12px; box-shadow:inset 0 .5px 0 var(--line)}
+.pact .qt{font-size:14px}
+.pact .ok{font-size:14px; color:var(--ok)}
+.pact select{margin-left:auto; font-size:13px; min-height:32px; color:var(--ink-2)}
+.pact [data-act="post-reject"]{color:var(--bad)}
+.pst{font-size:12px; font-weight:600; padding:4px 10px; border-radius:999px; background:var(--surface-2); color:var(--ink)}
 .pst[data-s="опубликован"]{background:var(--ok-soft); color:var(--ok)}
 .pst[data-s="одобрен"]{background:var(--accent-soft); color:var(--accent-ink)}
 .pst[data-s="отклонён"]{background:var(--bad-soft); color:var(--bad)}
+.pempty{text-align:center; color:var(--ink-2); font-size:17px; padding:40px}
 
 /* ---------- импорт и привязка ---------- */
 dialog.wide{max-width:min(96vw,720px)}
@@ -521,7 +555,16 @@ dialog.wide{max-width:min(96vw,720px)}
   .bal-n{font-size:44px}
   .panel{border-radius:20px}
   .two-col{grid-template-columns:1fr}
-  .posts{grid-template-columns:1fr}
+  .ptop h1{font-size:34px}
+  .ptop p{font-size:16px}
+  .ptop{padding-top:12px}
+  .post .car{flex-basis:100%; min-width:0}
+  .slides{aspect-ratio:auto; height:300px}
+  .tgq{flex-wrap:wrap; gap:12px}
+  .tgq .tgi{width:44px; height:44px; border-radius:12px}
+  .tgq .tgt b{font-size:16px}
+  .tgq button{width:100%}
+  .post h3{font-size:22px}
   .person{grid-template-columns:1fr}
   .evr.ce{grid-template-columns:4px 44px minmax(0,1fr)}
   .evr.ce .ea{grid-column:3; justify-content:flex-start}
@@ -597,7 +640,6 @@ dialog.wide{max-width:min(96vw,720px)}
   </div>
 
   <div class="view" id="v-posts" role="tabpanel" aria-labelledby="tab-posts" hidden>
-    <div class="vhead"><h1 class="vt">Посты</h1></div>
     <div class="view" id="postsBody"></div>
   </div>
 

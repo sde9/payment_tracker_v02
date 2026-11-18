@@ -240,6 +240,16 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   await p.selectOption('#v-posts .post:first-child select', 'опубликован');
   await p.waitForTimeout(400);
   ok('посты: статус ушёл в таблицу', POSTS[0].status, 'опубликован');
+  await p.selectOption('#v-posts .post:first-child select', 'черновик');
+  await p.waitForTimeout(300);
+  await p.click('#v-posts .post:first-child [data-act="post-approve"]');
+  await p.waitForTimeout(400);
+  ok('посты: «Одобрить» ставит в очередь', POSTS[0].status, 'одобрен');
+  ok('посты: очередь в шапке', (await p.$eval('#v-posts .tgq', (e) => e.textContent)).indexOf('Drizzle или downpour') > -1, true);
+  await p.click('#v-posts .post:first-child [data-act="post-next"]');
+  ok('посты: карусель листается', await p.$eval('#v-posts .post:first-child .slides li.on', (e) => e.textContent.indexOf('Слайд 2') > -1), true);
+  await p.click('#v-posts .post:first-child [data-act="post-tab"][data-t="tg"]');
+  ok('посты: вкладка Telegram', (await p.$eval('#v-posts .post:first-child .bub', (e) => e.textContent)).indexOf('Подпись про дождь') > -1, true);
   await shot(p, '06-posts');
 
   // ---------- телефон и тёмная тема ----------

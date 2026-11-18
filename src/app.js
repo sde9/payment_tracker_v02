@@ -994,29 +994,79 @@
 
   // ---------- посты ----------
   var POST_ST = ['черновик', 'одобрен', 'опубликован', 'отклонён'];
+  var POST_NAME = { 'черновик': 'Черновик', 'одобрен': 'В очереди', 'опубликован': 'Опубликован', 'отклонён': 'Отклонён' };
+  var POST_PAL = [['#E8F1FF', '#0B3D91'], ['#1D1D1F', '#FFFFFF'], ['#E9F8EE', '#0F5A2A'], ['#FFF4E5', '#7A3B00']];
+  var PF = 'all', PSLIDE = {}, PTAB = {};
+  var TG_ICON = '<svg width="30" height="30" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M21.5 4.3L2.9 11.4c-1 .4-1 1.6.1 1.9l4.6 1.4 1.8 5.5c.3.8 1.3 1 1.9.4l2.6-2.5 4.6 3.4c.7.5 1.7.1 1.9-.8L23 5.5c.2-1-.6-1.6-1.5-1.2zM9.9 14.4l8.6-7.7-6.8 9-.3 3.2-1.5-4.5z"/></svg>';
+  function postSlides(p) { return String(p.slides || '').split(/\n\s*---\s*\n|\n{2,}/).map(function (x) { return x.trim(); }).filter(Boolean); }
+  function tgText(p) {
+    var own = String(p.telegram || '').trim();
+    return own || [String(p.title || '').trim(), String(p.caption || '').trim(), String(p.hashtags || '').trim()].filter(Boolean).join('\n\n');
+  }
+  function postQueue() { return (G.posts || []).filter(function (p) { return p.status === 'одобрен' && !p.tgPosted; }).reverse(); }
+  // Бот публикует раз в день около 19:00 (по умолчанию), самый старый одобренный первым.
+  function queueWhen(n) {
+    var t = L.addDays(todayISO(), (new Date().getHours() >= 19 ? 1 : 0) + n - 1);
+    var lbl = t === todayISO() ? 'сегодня' : (t === L.addDays(todayISO(), 1) ? 'завтра' : dayLabel(t));
+    return lbl + ' около 19:00';
+  }
   function renderPosts() {
     var v = $('#postsBody'); if (!v || TAB !== 'posts') return;
-    var head = '<div class="phrow"><h2 class="ph">Черновики для Instagram</h2>' + (MODE === 'server' ? '<button class="tiny ghost" data-act="posts-refresh">Обновить</button>' : '') + '</div>' +
-      '<p class="gnote">Черновики пишет еженедельная задача по конспектам уроков. В них нет имён, оценок и личных подробностей учеников: только тема и факты. Поставьте «одобрен», и пост встанет в очередь: бот публикует в Telegram-канал по одному посту, самый старый первым (по умолчанию раз в день около 19:00). Instagram публикуете сами.</p>';
-    if (MODE !== 'server') { v.innerHTML = head + '<p class="gnote">Посты работают в версии на сервере.</p>'; return; }
-    if (G.postsState === 'off' || G.state === 'off') { v.innerHTML = head + '<p class="gnote">Google не подключён: docs/google-setup.md.</p>'; return; }
-    if (G.postsState === 'error') { v.innerHTML = head + '<p class="gnote err">' + esc(G.postsErr) + '</p>'; return; }
-    if (!G.posts) { v.innerHTML = head + '<p class="gnote">Загружаю…</p>'; if (G.postsState !== 'loading') loadPosts(); return; }
-    if (!G.posts.length) { v.innerHTML = head + '<p class="gnote">Черновиков пока нет. Первые появятся после еженедельного запуска.</p>'; return; }
-    // Бот берёт самый старый одобренный пост, а список здесь от новых к старым.
-    var queue = G.posts.filter(function (p) { return p.status === 'одобрен' && !p.tgPosted; }).reverse();
-    v.innerHTML = head + '<div class="posts">' + G.posts.map(function (p) {
-      var qn = queue.indexOf(p) + 1;
-      var slides = String(p.slides || '').split(/\n\s*---\s*\n|\n{2,}/).map(function (x) { return x.trim(); }).filter(Boolean);
-      return '<article class="panel post" data-post="' + attr(p.id) + '"><header><h3>' + esc(p.title || 'Без заголовка') + '</h3><span class="pst" data-s="' + attr(p.status) + '">' + esc(p.status) + '</span></header>' +
-        '<div class="meta2">' + esc([p.week ? 'неделя ' + p.week : '', p.dates ? 'по урокам ' + p.dates : '', p.tgPosted ? 'в Telegram ' + dShort(L.localDate(p.tgPosted)) : '', qn ? 'в очереди Telegram: ' + qn + '-й' : ''].filter(Boolean).join(' · ')) + '</div>' +
-        (p.telegram ? '<details class="tview"><summary>Текст для Telegram</summary><div class="cap">' + esc(p.telegram) + '</div></details>' : '') +
-        (slides.length ? '<ol class="slides">' + slides.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' : '') +
-        (p.caption ? '<div class="cap">' + esc(p.caption) + '</div>' : '') +
-        (p.hashtags ? '<div class="tags">' + esc(p.hashtags) + '</div>' : '') +
-        '<div class="hbtns"><button class="tiny" data-act="post-copy-cap">Скопировать подпись</button><button class="tiny" data-act="post-copy-slides">Скопировать слайды</button>' +
-        '<select data-act-change="post-status" aria-label="Статус">' + POST_ST.map(function (s) { return '<option' + (s === p.status ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></div></article>';
+    var queue = G.posts ? postQueue() : [];
+    var top = '<div class="ptop"><div class="pt"><h1>Посты</h1><p>Черновики по темам уроков, без имён и личных деталей. Новые появляются по воскресеньям.</p></div>' +
+      '<div class="w tgq"><span class="tgi">' + TG_ICON + '</span><div class="tgt"><span class="lbl">Очередь в Telegram · @enpony</span>' +
+      (queue.length ? '<b>Дальше: «' + esc(queue[0].title || 'Без заголовка') + '»</b><span>Выйдет ' + queueWhen(1) + ' · в очереди ' + queue.length + ' · по одному в день</span>'
+        : '<b>Очередь пуста</b><span>Одобрите черновик, и бот опубликует его около 19:00</span>') + '</div>' +
+      (MODE === 'server' ? '<button data-act="posts-refresh">Обновить</button>' : '') + '</div></div>';
+    function msg(t, cls) { v.innerHTML = top + '<div class="w pempty' + (cls ? ' ' + cls : '') + '">' + t + '</div>'; }
+    if (MODE !== 'server') { msg('Посты работают в версии на сервере.'); return; }
+    if (G.postsState === 'off' || G.state === 'off') { msg('Google не подключён. Как подключить: docs/google-setup.md.'); return; }
+    if (G.postsState === 'error') { msg('<span class="gnote err">' + esc(G.postsErr) + '</span>'); return; }
+    if (!G.posts) { msg('Загружаю…'); if (G.postsState !== 'loading') loadPosts(); return; }
+    if (!G.posts.length) { msg('Черновиков пока нет. Первые появятся после воскресного запуска.'); return; }
+    var cnt = { all: G.posts.length };
+    G.posts.forEach(function (p) { cnt[p.status] = (cnt[p.status] || 0) + 1; });
+    var fil = '<div class="pfil" role="group" aria-label="Фильтр по статусу">' + [['all', 'Все'], ['черновик', 'Черновики'], ['одобрен', 'В очереди'], ['опубликован', 'Опубликованы'], ['отклонён', 'Отклонены']].map(function (f) {
+      return '<button data-act="post-filter" data-f="' + attr(f[0]) + '" aria-pressed="' + (PF === f[0] ? 'true' : 'false') + '">' + f[1] + '<i>' + (cnt[f[0]] || 0) + '</i></button>';
     }).join('') + '</div>';
+    var list = G.posts.filter(function (p) { return PF === 'all' || p.status === PF; });
+    v.innerHTML = top + fil + (list.length ? '<div class="posts">' + list.map(function (p) {
+      var idx = G.posts.indexOf(p), pal = POST_PAL[idx % POST_PAL.length];
+      var sl = postSlides(p), cur = Math.min(PSLIDE[p.id] || 0, Math.max(0, sl.length - 1));
+      var tab = PTAB[p.id] || 'ig', qn = queue.indexOf(p) + 1;
+      var meta = [p.week ? 'Неделя ' + String(p.week).replace(/^\d{4}-W0?/, '') : '', p.dates ? 'по урокам ' + p.dates : ''].filter(Boolean).join(' · ');
+      var act = '';
+      if (p.status === 'черновик') act = '<button class="pro" data-act="post-approve">Одобрить в Telegram</button><button class="ghost" data-act="post-reject">Отклонить</button>';
+      else if (p.status === 'одобрен' && !p.tgPosted) act = '<span class="qt">' + (qn ? qn + '-й в очереди, выйдет ' + queueWhen(qn) : 'В очереди') + '</span><button class="ghost" data-act="post-unqueue">Убрать из очереди</button>';
+      else if (p.status === 'отклонён') act = '<button data-act="post-unqueue">Вернуть в черновики</button>';
+      else act = '<span class="ok">Опубликован' + (p.tgPosted ? ' в Telegram ' + esc(dShort(L.localDate(p.tgPosted))) : '') + '</span>';
+      return '<article class="w post" data-post="' + attr(p.id) + '">' +
+        '<div class="car"><ol class="slides" style="--sbg:' + pal[0] + '; --sfg:' + pal[1] + '">' + (sl.length ? sl : [p.title || '']).map(function (x, k) {
+          return '<li class="' + (k === cur ? 'on' : '') + '"><span class="sno">' + (k + 1) + ' / ' + (sl.length || 1) + '</span>' + esc(x) + '</li>';
+        }).join('') + '</ol>' +
+        (sl.length > 1 ? '<div class="arws"><button data-act="post-prev" aria-label="Предыдущий слайд">‹</button><button data-act="post-next" aria-label="Следующий слайд">›</button></div>' +
+          '<div class="dots" aria-hidden="true">' + sl.map(function (x, k) { return '<i' + (k === cur ? ' class="on"' : '') + '></i>'; }).join('') + '</div>' : '') + '</div>' +
+        '<div class="pb"><div class="pm"><span class="pst" data-s="' + attr(p.status) + '">' + esc(POST_NAME[p.status] || p.status) + '</span>' + esc(meta) + '</div>' +
+        '<h3>' + esc(p.title || 'Без заголовка') + '</h3>' +
+        '<div class="pseg" role="tablist"><button role="tab" data-act="post-tab" data-t="ig" aria-selected="' + (tab === 'ig') + '">Instagram</button>' +
+        '<button role="tab" data-act="post-tab" data-t="tg" aria-selected="' + (tab === 'tg') + '">Telegram</button></div>' +
+        (tab === 'ig'
+          ? '<div class="cap">' + esc(p.caption || 'Подписи нет') + (p.hashtags ? '<div class="tags">' + esc(p.hashtags) + '</div>' : '') + '</div>' +
+            '<div class="hbtns"><button data-act="post-copy-slides">Скопировать слайды</button><button data-act="post-copy-cap">Скопировать подпись</button></div>'
+          : '<div class="tgbox"><div class="bub">' + esc(tgText(p)) + '</div><small>Так пост будет выглядеть в канале. Текст правится в таблице, в колонке «Telegram».</small></div>' +
+            '<div class="hbtns"><button data-act="post-copy-tg">Скопировать текст</button></div>') +
+        '<div class="pact">' + act +
+        '<select data-act-change="post-status" aria-label="Статус">' + POST_ST.map(function (s2) { return '<option value="' + s2 + '"' + (s2 === p.status ? ' selected' : '') + '>' + (POST_NAME[s2] || s2) + '</option>'; }).join('') + '</select></div>' +
+        '</div></article>';
+    }).join('') + '</div>' : '<div class="w pempty">Здесь пусто</div>');
+  }
+  function setPostStatus(p, val, okMsg) {
+    var old = p.status;
+    p.status = val; renderPosts();
+    gpost({ action: 'post-status', id: p.id, status: val }).then(function (res) {
+      if (res.status === 200) toast(okMsg || 'Статус сохранён');
+      else { p.status = old; renderPosts(); toast(gErr(res.j)); }
+    });
   }
   function postById(id) { return (G.posts || []).filter(function (p) { return p.id === id; })[0]; }
 
@@ -1222,10 +1272,18 @@
       return;
     }
     if (act === 'posts-refresh') { G.posts = null; G.postsState = ''; loadPosts(); return; }
-    if (act === 'post-copy-cap' || act === 'post-copy-slides') {
+    if (act === 'post-filter') { PF = b.dataset.f; renderPosts(); return; }
+    if (/^post-/.test(act) && b.closest('[data-post]')) {
       var p = postById(b.closest('[data-post]').dataset.post); if (!p) return;
+      var nsl = Math.max(1, postSlides(p).length);
       if (act === 'post-copy-cap') copyText(String(p.caption || '') + (p.hashtags ? '\n\n' + p.hashtags : ''), 'Подпись скопирована');
-      else copyText(String(p.slides || ''), 'Слайды скопированы');
+      else if (act === 'post-copy-slides') copyText(String(p.slides || ''), 'Слайды скопированы');
+      else if (act === 'post-copy-tg') copyText(tgText(p), 'Текст для Telegram скопирован');
+      else if (act === 'post-prev' || act === 'post-next') { PSLIDE[p.id] = ((PSLIDE[p.id] || 0) + (act === 'post-next' ? 1 : -1) + nsl) % nsl; renderPosts(); }
+      else if (act === 'post-tab') { PTAB[p.id] = b.dataset.t; renderPosts(); }
+      else if (act === 'post-approve') setPostStatus(p, 'одобрен', 'В очереди: ' + (postQueue().length + 1) + '-й. Бот опубликует сам');
+      else if (act === 'post-reject') setPostStatus(p, 'отклонён', 'Пост отклонён');
+      else if (act === 'post-unqueue') setPostStatus(p, 'черновик', 'Вернул в черновики');
       return;
     }
     if (act === 'hist-all') { if (st) { histAll[st.id] = 1; renderRows(); } return; }
@@ -1321,11 +1379,8 @@
       if (t.dataset && t.dataset.imp) { onImportInput(t); return; }
       if (t.dataset && t.dataset.link === 'sel') { var f = t.closest('.field'); $('[data-link="new"]', f).hidden = t.value !== 'new'; return; }
       if (t.dataset && t.dataset.actChange === 'post-status') {
-        var card = t.closest('[data-post]'), p = postById(card.dataset.post), val = t.value;
-        gpost({ action: 'post-status', id: p.id, status: val }).then(function (res) {
-          if (res.status === 200) { p.status = val; renderPosts(); toast('Статус сохранён'); }
-          else { toast(gErr(res.j)); renderPosts(); }
-        });
+        var card = t.closest('[data-post]'), p = postById(card.dataset.post);
+        if (p) setPostStatus(p, t.value);
       }
     });
     document.addEventListener('input', function (e) {

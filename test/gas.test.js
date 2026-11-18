@@ -42,9 +42,12 @@ const calendars = [
     .map(mkEvent)
 }));
 
-function sheet(rows) {
-  return {
+function sheet(rows, cols) {
+  const sh = {
     rows,
+    cols: cols || 20,
+    getMaxColumns: () => sh.cols,
+    insertColumnsAfter: (after, n) => { sh.cols += n; },
     getLastRow: () => rows.length,
     getRange: (r, c, nr, nc) => ({
       getValues: () => rows.slice(r - 1, r - 1 + nr).map((row) => {
@@ -52,9 +55,11 @@ function sheet(rows) {
         while (out.length < nc) out.push('');
         return out;
       }),
-      setValue: (v) => { rows[r - 1][c - 1] = v; }
+      setValue: (v) => { rows[r - 1][c - 1] = v; },
+      setValues: (vals) => { vals.forEach((row, i) => row.forEach((v, j) => { rows[r - 1 + i][c - 1 + j] = v; })); }
     })
   };
+  return sh;
 }
 const sheets = {
   'Конспекты': sheet([
@@ -67,7 +72,7 @@ const sheets = {
     ['id', 'Создан', 'Неделя', 'Заголовок', 'Слайды', 'Подпись', 'Хэштеги', 'Статус', 'Даты'],
     ['p1', '2026-10-05T00:00:00Z', '2026-W40', 'Первый', 's', 'c', '#a', 'черновик', ''],
     ['p2', '2026-10-12T00:00:00Z', '2026-W41', 'Второй', 's', 'c', '#b', '', '']
-  ])
+  ], 9)
 };
 const files = [];
 const folder = {
@@ -94,8 +99,25 @@ const ctx = {
     getUuid: () => '1234-5678-' + Math.random().toString(16).slice(2),
     formatDate: (d) => new Date(d.getTime() + 13 * 3600e3).toISOString().slice(0, 10)
   },
-  Logger: { log: () => {} }
+  Logger: { log: () => {} },
+  UrlFetchApp: {
+    fetch: (url, opts) => {
+      tg.push({ url, body: opts && opts.payload ? JSON.parse(opts.payload) : null });
+      let out = { ok: true, result: {} };
+      if (url.indexOf('botBAD') > -1) out = { ok: false, description: 'Unauthorized' };
+      else if (url.indexOf('/getMe') > -1) out = { ok: true, result: { username: 'enpony_bot' } };
+      else if (url.indexOf('/getChat') > -1) out = { ok: true, result: { title: 'English Pony' } };
+      return { getContentText: () => JSON.stringify(out), getResponseCode: () => (out.ok ? 200 : 401) };
+    }
+  },
+  ScriptApp: {
+    getProjectTriggers: () => triggers.slice(),
+    deleteTrigger: (t) => { triggers.splice(triggers.indexOf(t), 1); },
+    newTrigger: (fn) => { const t = { fn, getHandlerFunction: () => fn }; const b = { timeBased: () => b, everyDays: (d) => { t.days = d; return b; }, atHour: (h) => { t.hour = h; return b; }, create: () => { triggers.push(t); return t; } }; return b; }
+  }
 };
+const tg = [];
+const triggers = [];
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'google', 'Code.gs'), 'utf8'), ctx, { filename: 'Code.gs' });
 
@@ -143,6 +165,41 @@ ok('копия: неверная дата', post({ action: 'backup', token: T, d
 vm.runInContext('BACKUP_KEEP = 3', ctx);
 ['2026-10-10', '2026-10-11', '2026-10-12', '2026-10-13'].forEach((d) => post({ action: 'backup', token: T, date: d, data: snap }));
 ok('копия: старые уходят в корзину', files.filter((f) => !f.trashed).map((f) => f.name).sort(), ['uroki-2026-10-12.json', 'uroki-2026-10-13.json', 'uroki-2026-10-14.json']);
+
+// ---------- Telegram ----------
+const rows = sheets['Посты'].rows;
+ok('посты: недостающие колонки добавлены', [sheets['Посты'].cols, rows[0][9], rows[0][10]], [11, 'Telegram', 'В Telegram']);
+rows.push(['p3', new Date(Date.now() - 72 * 3600e3).toISOString(), '2026-W42', 'Zed <или> zee', 's', 'Подпись & пример', '#nz', 'черновик', '', '', '']);
+rows.push(['p4', new Date().toISOString(), '2026-W42', 'Свежий', 's', 'c', '', 'одобрен', '', 'Готовый текст для канала', '']);
+let threw = '';
+try { ctx.publishTelegram(); } catch (e) { threw = e.message; }
+ok('telegram: без настроек не публикует', threw, 'telegram-not-configured');
+props.set('TG_TOKEN', 'T1'); props.set('TG_CHAT', '@enpony');
+ctx.setupTelegram();
+ok('telegram: расписание на 19:00, одно', triggers.map((t) => [t.fn, t.hour]), [['publishTelegram', 19]]);
+ctx.setupTelegram();
+ok('telegram: повторная настройка не плодит расписания', triggers.length, 1);
+props.set('TG_EVERY_DAYS', '2'); props.set('TG_HOUR', '10');
+ctx.setupTelegram();
+ok('telegram: своя частота и час', triggers.map((t) => [t.days, t.hour]), [[2, 10]]);
+tg.length = 0;
+let r1 = ctx.publishTelegram();
+ok('telegram: уходит только одобренный пост', [r1.posted, r1.id], [1, 'p4']);
+ok('telegram: свой текст для канала', tg[0].body.text, 'Готовый текст для канала');
+ok('telegram: канал', tg[0].body.chat_id, '@enpony');
+ok('telegram: статус и дата записаны', [rows[4][7], !!rows[4][10]], ['опубликован', true]);
+ok('telegram: второй раз не уходит', ctx.publishTelegram().posted, 0);
+rows[2][7] = 'отклонён';
+props.set('TG_MODE', 'auto');
+tg.length = 0;
+const r2 = ctx.publishTelegram();
+ok('telegram: в режиме auto уходит черновик старше 48 часов', r2.id, 'p3');
+ok('telegram: текст собран и экранирован', tg[0].body.text, '<b>Zed &lt;или&gt; zee</b>\n\nПодпись &amp; пример\n\n#nz');
+ok('telegram: отклонённый и опубликованный не трогаются', ctx.publishTelegram().posted, 0);
+props.set('TG_TOKEN', 'BAD');
+let bad = '';
+try { ctx.setupTelegram(); } catch (e) { bad = e.message; }
+ok('telegram: неверный токен виден сразу', bad.indexOf('Токен бота не подошёл') === 0, true);
 
 console.log(failed ? '\nПРОВАЛЕНО: ' + failed : '\nВсе проверки прошли');
 process.exit(failed ? 1 : 0);

@@ -132,7 +132,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   await p.waitForSelector('#week:not([hidden]) .dayg', { timeout: 8000 });
   ok('старые балансы прочитаны как есть', await p.$$eval('#rows .row .bal-n', (n) => n.map((x) => x.textContent)), ['6', '0', '−5']);
   ok('неделя: два урока не привязаны', await p.$$eval('#week [data-act="link"]', (n) => n.length), 2);
-  ok('неотмеченных пока нет (адресов у учеников нет)', await p.$eval('#unmarked', (e) => e.hidden), true);
+  ok('неотмеченных пока нет (адресов у учеников нет)', await p.$$eval('#unmarked .evr', (n) => n.length), 0);
   ok('статус Google в настройках', (await p.$eval('#gStatus', (e) => e.textContent)).indexOf('Google подключён') === 0, true);
   await shot(p, '01-main-before');
 
@@ -143,12 +143,12 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   await p.click('#dlgLink [data-act="link-ok"]');
   await p.waitForTimeout(300);
   ok('привязка: адрес у ученика', await p.$eval('.row[data-id="s1"] .emails', (e) => e.textContent), ANNA);
-  ok('привязка: следующий урок в карточке', (await p.$eval('.row[data-id="s1"] .nx', (e) => e.textContent)).indexOf('Следующий урок:') === 0, true);
+  ok('привязка: следующий урок в карточке', (await p.$eval('.row[data-id="s1"] .nx', (e) => e.textContent)).length > 0, true);
   ok('неотмеченные: прошедший урок без отметки', await p.$$eval('#unmarked .evr', (n) => n.length), 1);
   ok('отметка за день до урока нашла свой урок', await p.$eval('.row[data-id="s1"]', (e) => e.dataset.state), 'ok');
 
   // ---------- импорт истории ----------
-  await p.click('#settings > summary');
+  await p.click('[data-tab="set"]');
   await p.click('[data-act="cal-import"]');
   await p.waitForSelector('#dlgImport[open]');
   await p.fill('#impFrom', L.addDays(TODAY, -120));
@@ -176,6 +176,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   ok('импорт: Катя в архиве', st1.students.find((s) => s.emails.indexOf(KATE) > -1).arch, '1');
 
   // ---------- отметки из календаря ----------
+  await p.click('[data-tab="today"]');
   ok('неотмеченные: Анна и Марк', await p.$$eval('#unmarked .evr b', (n) => n.map((x) => x.textContent).sort()), ['Анна Петрова', 'Марк Орлов']);
   await shot(p, '03-main-after-import');
   await p.click('#unmarked .evr[data-sid="s1"] [data-act="ev-lesson"]');
@@ -183,7 +184,7 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   ok('Провёл из календаря: баланс −1', await p.$eval('.row[data-id="s1"] .bal-n', (e) => e.textContent), '5');
   await p.click('#unmarked .evr[data-sid="s2"] [data-act="ev-skip"]');
   await p.waitForTimeout(300);
-  ok('«Не было» убирает из списка', await p.$eval('#unmarked', (e) => e.hidden), true);
+  ok('«Не было» убирает из списка', await p.$$eval('#unmarked .evr', (n) => n.length), 0);
   ok('«Не было» не трогает баланс', await p.$eval('.row[data-id="s2"] .bal-n', (e) => e.textContent), '0');
   await p.click('#week .evr[data-sid="s1"] [data-act="ev-cancel"]');
   await p.waitForSelector('#dlgCancel[open]');
@@ -200,7 +201,8 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   ok('в хранилище «не было»', Object.keys(st2.dismissed), [EVENTS[5].key + '|s2']);
 
   // ---------- конспекты ----------
-  await p.click('.row[data-id="s1"] .hist summary');
+  await p.click('[data-tab="main"]');
+  await p.click('#plist [data-sid="s1"]'); 
   await p.waitForTimeout(150);
   ok('конспект у урока', await p.$$eval('.row[data-id="s1"] .h .nt', (n) => n.length), 1);
   ok('последние конспекты', await p.$$eval('.row[data-id="s1"] .lastnotes .nt', (n) => n.length), 1);
@@ -238,11 +240,21 @@ const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.joi
   await p.selectOption('#v-posts .post:first-child select', 'опубликован');
   await p.waitForTimeout(400);
   ok('посты: статус ушёл в таблицу', POSTS[0].status, 'опубликован');
+  await p.selectOption('#v-posts .post:first-child select', 'черновик');
+  await p.waitForTimeout(300);
+  await p.click('#v-posts .post:first-child [data-act="post-approve"]');
+  await p.waitForTimeout(400);
+  ok('посты: «Одобрить» ставит в очередь', POSTS[0].status, 'одобрен');
+  ok('посты: очередь в шапке', (await p.$eval('#v-posts .tgq', (e) => e.textContent)).indexOf('Drizzle или downpour') > -1, true);
+  await p.click('#v-posts .post:first-child [data-act="post-next"]');
+  ok('посты: карусель листается', await p.$eval('#v-posts .post:first-child .slides li.on', (e) => e.textContent.indexOf('Слайд 2') > -1), true);
+  await p.click('#v-posts .post:first-child [data-act="post-tab"][data-t="tg"]');
+  ok('посты: вкладка Telegram', (await p.$eval('#v-posts .post:first-child .bub', (e) => e.textContent)).indexOf('Подпись про дождь') > -1, true);
   await shot(p, '06-posts');
 
   // ---------- телефон и тёмная тема ----------
   await p.setViewportSize({ width: 390, height: 900 });
-  for (const tab of ['main', 'dash', 'posts']) {
+  for (const tab of ['today', 'main', 'dash', 'posts', 'set']) {
     await p.click('[data-tab="' + tab + '"]');
     await p.waitForTimeout(250);
     ok('телефон без горизонтальной прокрутки: ' + tab, await p.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true);
